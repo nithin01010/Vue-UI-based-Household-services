@@ -1,0 +1,42 @@
+Here are all the routes in the provided Flask application:
+
+1. Admin routes:
+   - `/ad_summary`: Admin summary page.
+   - `/ad_Search`: Admin search page.
+   - `/check_Request/<int:id>`: Check request details.
+   - `/check_Customer/<int:id>`: Check customer details.
+   - `/check_Professional/<int:id>`: Check professional details.
+   - `/ad_login`: Admin login.
+   - `/ad_DashBoard`: Admin dashboard.
+   - `/ad_Profile`: Admin profile.
+   - `/ad_summary_graph`: Admin summary graph.
+
+2. Customer routes:
+   - `/C_logout`: Customer logout.
+   - `/C_login`: Customer login.
+   - `/C_DashBoard/<int:C_id>`: Customer dashboard.
+   - `/C_Profile/<int:C_id>`: Customer profile.
+   - `/C_Booking/<int:C_id>/<string:cato>`: Customer booking.
+   - `/service_remarks/<int:C_id>/<int:request_id>`: Customer service remarks.
+   - `/C_hidden_request/<int:request_id>`: Customer hide request.
+   - `/C_hidden_professional/<int:professional_id>`: Customer hide professional.
+   - `/C_hidden_customer/<int:customer_id>`: Customer hide customer.
+   - `/C_hidden_service/<int:service_id>`: Customer hide service.
+   - `/C_summary/<int:C_id>`: Customer summary.
+   - `/C_Search/<int:C_id>`: Customer search.
+
+3. Professional routes:
+   - `/P_logout`: Professional logout.
+   - `/P_login`: Professional login.
+   - `/P_DashBoard/<int:P_id>`: Professional dashboard.
+   - `/P_Profile/<int:P_id>`: Professional profile.
+   - `/P_Accept/<int:P_id>/<int:request_id>`: Professional accept request.
+   - `/P_Reject/<int:P_id>/<int:request_id>`: Professional reject request.
+   - `/P_hidden_request/<int:request_id>`: Professional hide request.
+   - `/P_hidden_professional/<int:professional_id>`: Professional hide professional.
+   - `/P_hidden_customer/<int:customer_id>`: Professional hide customer.
+   - `/P_hidden_service/<int:service_id>`: Professional hide service.
+   - `/P_summary/<int:P_id>`: Professional summary.
+   - `/P_Search/<int:P_id>`: Professional search.
+
+Please note that the routes may vary based on the specific implementation and the database schema used in the application.
