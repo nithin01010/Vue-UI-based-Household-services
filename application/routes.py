@@ -34,7 +34,7 @@ def C_register():
             roles=["customer"]
         )
         user1=app.security.datastore.find_user(email=data["email"]).id
-        customer = Customer(fullname=data['username'], address=data['address'], pincode=data['pincode'], login=user1,
+        customer = Customer(fullname=data['username'], address=data['address'], pincode=data['pincode'], login_id=user1,
                             number=data['number'] ,status="Pending")
         db.session.add(customer)
         db.session.commit()
@@ -54,7 +54,7 @@ def P_register():
         )
         user1=app.security.datastore.find_user(email=data["email"]).id
         professional = Professional(fullname=data['username'], address=data['address'], pincode=data['pincode'],
-                                     login=user1,number=data['number'] ,status="Pending",experince = data['experince'],
+                                     login_id=user1,number=data['number'] ,status="Pending",experince = data['experince'],
                                      service_id= data['service_id'])
         db.session.add(professional)
         db.session.commit()
