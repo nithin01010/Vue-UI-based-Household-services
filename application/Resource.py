@@ -13,10 +13,10 @@ def roles_list(roles):
 
 parser = reqparse.RequestParser()
 parser.add_argument('service_id')
-parser.add_argument('Service_name')
-parser.add_argument('Service_description')
-parser.add_argument('Service_price')
-parser.add_argument('Service_category')
+parser.add_argument('service_name')
+parser.add_argument('service_description')
+parser.add_argument('service_price')
+parser.add_argument('service_category')
 
 
 class Requests(Resource):
@@ -51,10 +51,13 @@ class Requests(Resource):
     @roles_accepted('customer','professional')
     def post(self):
         args= parser.parse_args()
-        request = Request(customer_id=current_user.id,service_id=args["service_id"],
-                            status="Requested", date_request=date.today())
-        db.session.add(request)
-        db.session.commit()
+        try:
+            request = Request(customer_id=current_user.id,service_id=args["service_id"],
+                                status="Requested", date_request=date.today())
+            db.session.add(request)
+            db.session.commit()
+        except:
+            return {"message": "Error occured while adding"}, 404
         return {"message": "Request added successfully"}, 201
 
 class service(Resource):
@@ -80,15 +83,18 @@ class service(Resource):
     @roles_accepted('admin')
     def post(self):
         args= parser.parse_args()
-        service = Service(name=args.Service_name, description=args.Service_description,price=args.Service_price)
+        service = Service(name=args.service_name, description=args.service_description,
+                            price=args.service_price,category=args.service_category)
         db.session.add(service)
         db.session.commit()
-        return {"message": "Request added successfully"}, 201
+        return {"message": "Service added successfully"}, 201
 
 
 
 
-api.add_resource(Requests,'/api/get_requests','/api/create_requests')
+api.add_resource(Requests,'/api/get_requests','/api/create_request')
+
+api.add_resource(service,'/api/get_services','/api/create_service')
 
 
 

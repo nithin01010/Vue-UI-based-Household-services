@@ -80,5 +80,7 @@ class Service(db.Model):
     name = db.Column(db.String(255), nullable=False, unique=True)
     description = db.Column(db.String(255), nullable=True)
     price = db.Column(db.Float, nullable=False)
-    categorie = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(255), nullable=False)
     rating = db.Column(db.Integer, nullable=True)
+
+
