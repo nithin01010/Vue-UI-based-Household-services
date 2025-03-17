@@ -190,7 +190,21 @@ def Unblock_professional():
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 
-
+@app.route("/api/customer_search", methods=['POST'])
+@auth_required('token')
+@roles_required('user')
+def customer_search():
+    data = request.get_json()
+    query = data['query'].lower()
+    category = data['category'].lower()
+    if category == 'professional':
+        results = Professional.query.filter(Professional.fullname.ilike(f'%{query}%')).all()
+    elif category == 'service':
+        results = Service.query.filter(Service.name.ilike(f'%{query}%')).all()
+    elif category == 'category':
+            results = Service.query.filter(Service.categorie.ilike(f'%{query}%')).all()
+            results = [s for s in results if Professional.query.filter_by(service_id=s.id).first()]
+    return jsonify(results)
 
 
 @app.route('/api/review',method=['POST'])
