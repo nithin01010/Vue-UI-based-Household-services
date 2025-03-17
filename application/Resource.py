@@ -157,10 +157,10 @@ class service(Resource):
 
 
 
-api.add_resource(Requests,'/api/get_requests','/api/create_request','/api/update/<int:id>',
+api.add_resource(Requests,'/api/get_requests','/api/create_request','/api/update_request/<int:id>',
                  '/api/C_delete/<int:id>','/api/P_delete/<int:id','/api/A_delete/<int:id>')
 
-api.add_resource(service,'/api/get_services','/api/create_service')
+api.add_resource(service,'/api/get_services','/api/create_service','/api/update_service','/api/delete_service')
 
 
 
