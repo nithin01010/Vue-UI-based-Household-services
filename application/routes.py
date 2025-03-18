@@ -54,24 +54,25 @@ def P_register():
         )
         user1=app.security.datastore.find_user(email=data["email"]).id
         professional = Professional(fullname=data['username'], address=data['address'], pincode=data['pincode'],
-                                     login_id=user1,number=data['number'] ,status="Pending",experince = data['experince'],
+                                     login_id=user1,number=data['number'] ,status="Under Verification",experince = data['experince'],
                                      service_id= data['service_id'])
         db.session.add(professional)
         db.session.commit()
         return jsonify({"message": "User created successfully"}), 201
     return jsonify({"message": "User Already exists"}), 400
+#-------------------------------------------------------------ADMIN APIs----------------------------------------------------------------------
 
-@app.route('/api/Accept_professional',methods=['POST'])
-def Accept_professional():
+@app.route("/api/accept_professional")
+@auth_required('token')
+@roles_required('admin')
+def accept_professional():
     data = request.get_json()
-    request=Professional.query.get(data['id'])
-    request.status = "close it"
+    professional = Professional.query.get(id=data['id'])
+    professional.status = "Active"
     db.session.commit()
-    return jsonify({"message": "Request accepted successfully"}), 201
+    return jsonify({"message": "Professional Accepted successfully"}), 200
 
-
-
-@app.route('/api/view_customers',method=['POST'])
+@app.route('/api/view_customers',methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
 def view_customers():
@@ -88,7 +89,7 @@ def view_customers():
         })
     return jsonify(result)
 
-@app.route('/api/view_professionals',method=['POST'])
+@app.route('/api/view_professionals',methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
 def view_professionals():
@@ -107,7 +108,7 @@ def view_professionals():
         })
     return jsonify(result)
 
-@app.route('/api/view_requests',method=['POST'])
+@app.route('/api/view_requests',methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
 def view_requests():
@@ -126,7 +127,7 @@ def view_requests():
         })
     return jsonify(result)
 
-@app.route('/api/Admin_search',method=['POST'])
+@app.route('/api/Admin_search',methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
 def Admin_search():
@@ -147,9 +148,9 @@ def Admin_search():
     return jsonify(results)
 
 
-@app.route("route")
+@app.route('/api/Block_customer', methods=['POST'])
 @auth_required('token')
-@roles_required('/api/Block_customer')
+@roles_required("admin")
 def Block_customer():
     data = request.get_json()
     user=app.security.datastore.find_user(email=data['email'])
@@ -158,9 +159,9 @@ def Block_customer():
     return jsonify({"message": "User blocked successfully"}), 201
 
 
-@app.route("route")
+@app.route('/api/Unblock_customer', methods=['POST'])
 @auth_required('token')
-@roles_required('/api/Unblock_customer')
+@roles_required('admin')
 def Unblock_customer():
     data = request.get_json()
     user=app.security.datastore.find_user(email=data['email'])
@@ -188,7 +189,7 @@ def Unblock_professional():
     db.session.commit()
     return jsonify({"message": "User unblocked successfully"}), 201
 
-#--------------------------------------------------------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------CUST APIS----------------------------------------------------------------------------
 
 @app.route("/api/customer_search", methods=['POST'])
 @auth_required('token')
@@ -207,22 +208,39 @@ def customer_search():
     return jsonify(results)
 
 
-@app.route('/api/review',method=['POST'])
+
+
+#---------------------------------------------------------------PROF APIS---------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@app.route('/api/Accept_request',methods=['POST'])
 @auth_required('token')
-@roles_required('user')
-def Review():
+@roles_required('professional')
+def Accept_request():
     data = request.get_json()
-    request=Request.query.get(data['id'])
-    request.remarks= data['remarks']
-    request.rating = data['rating']
-    service= Service.query.get(request.id)
-    service
+    request=Professional.query.get(data['id'])
+    request.status = "close it"
     db.session.commit()
-    return jsonify({"message": "Review added successfully"}), 201
-
-
-
-
+    return jsonify({"message": "Request accepted successfully"}), 201
 
 
 

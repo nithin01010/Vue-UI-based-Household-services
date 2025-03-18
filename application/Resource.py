@@ -12,6 +12,8 @@ def roles_list(roles):
     return list
 
 parser = reqparse.RequestParser()
+parser.add_argument('request_remarks')
+parser.add_argument('request_rating')
 parser.add_argument('service_id')
 parser.add_argument('service_name')
 parser.add_argument('service_description')
@@ -48,7 +50,7 @@ class Requests(Resource):
             "message": "No requests found"
         },404
     @auth_required('token')
-    @roles_accepted('customer','professional')
+    @roles_accepted('customer')
     def post(self):
         args= parser.parse_args()
         try:
@@ -59,52 +61,58 @@ class Requests(Resource):
         except:
             return {"message": "Error occured while adding"}, 404
         return {"message": "Request added successfully"}, 201
+    
     @auth_required('token')
-    @roles_accepted('customer')
+    @roles_accepted('admin')
     def put(self,id):
         args= parser.parse_args()
         request = Request.query.get(id)
         if not request:
             return {"message": "Request not found"}, 404
-        request.name= args.service_name
+        request.service_id= args.service_id
         db.session.commit()
         return {"message": "Request updated successfully"}, 200
     
     @auth_required('token')
-    @roles_accepted('customer')
-    def C_delete(self,id):
+    @roles_required('professional')
+    def professional_accept(self,id):
         request = Request.query.get(id)
-        if not request:
-            return {"message": "Request not found"}, 404
-        if request.status!="pending":
-            return {"message": "Cannot delete completed/accepted request"}, 403
-        db.session.delete(request)
+        request.professional_id= current_user.id
         db.session.commit()
-        return {"message": "Request deleted successfully"}, 200
+        return {"message": "Request Accepted successfully"}, 200
+
+    
     @auth_required('token')
-    @roles_accepted('professional')
-    def P_delete(self,id):
+    @roles_required('user')
+    def customer_review(self,id):
+        args= parser.parse_args()
         request = Request.query.get(id)
-        if not request:
-            return {"message": "Request not found"}, 404
-        request.professional_id=None
-        request.status="Request was cancelled by professional"
+        request.remarks = args["request_remarks"]
+        request.rating = args["request_rating"]
+        request.status = "completed"
+        db.session.commit()
+        return {"message" : " Remarks added successfully"}
+    
+    
+    @auth_required('token')
+    @roles_accepted('customer','admin','professional')
+    def delete(self,id):
+        request = Request.query.get(id)
+        if "customer" in roles_list(current_user.roles):
+            if request.status!="Requested":
+                return {"message": "Cannot delete completed/accepted request"}, 403
+            db.session.delete(request)
+        elif "admin" in roles_list(current_user.roles):
+            request.status="Request was cancelled by Admin"
+        else:
+            request.status="Request was cancelled by professional"
         db.session.commit()
         return {"message": "Request deleted successfully"}, 200
     
-    @auth_required('token')
-    @roles_accepted('admin')
-    def A_delete(self,id):
-        request = Request.query.get(id)
-        if not request:
-            return {"message": "Request not found"}, 404
-        request.status="Request was cancelled by Admin"
-        db.session.commit()
-        return {"message": "Request deleted successfully"}, 200
     
 class service(Resource):
     @auth_required('token')
-    @roles_accepted('admin')
+    @roles_accepted('admin','customer')
     def get(self):
         services=Service.query.all()
         service_json=[]
@@ -130,17 +138,18 @@ class service(Resource):
         db.session.add(service)
         db.session.commit()
         return {"message": "Service added successfully"}, 201
+    
     @auth_required('token')
     @roles_accepted('admin')
-    def put(self,id):
-        args= parser.parse_args()
+    def put(self, id):
+        args = parser.parse_args()
         service = Service.query.get(id)
         if not service:
             return {"message": "Service not found"}, 404
-        service.name= args.service_name
-        service.description= args.service_description
-        service.price=args.service_price
-        service.category=args.service_category
+        service.name = args.service_name
+        service.description = args.service_description
+        service.price = args.service_price
+        service.category = args.service_category
         db.session.commit()
         return {"message": "Service updated successfully"}, 200
     
@@ -156,14 +165,10 @@ class service(Resource):
 
 
 
+api.add_resource(Requests, '/api/get_requests', '/api/create_request', '/api/update_request/<int:id>','/api/delete_request/<int:id>')
 
-api.add_resource(Requests,'/api/get_requests','/api/create_request','/api/update_request/<int:id>',
-                 '/api/C_delete/<int:id>','/api/P_delete/<int:id','/api/A_delete/<int:id>')
-
-api.add_resource(service,'/api/get_services','/api/create_service','/api/update_service','/api/delete_service')
-
-
-
+api.add_resource(service, '/api/get_services', '/api/create_service', '/api/update_service/<int:id>',
+                 '/api/delete_service/<int:id>')
 
 
 
