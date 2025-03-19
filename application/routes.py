@@ -148,52 +148,88 @@ def Admin_search():
     return jsonify(results)
 
 
-@app.route('/api/Block_customer', methods=['POST'])
+@app.route('/api/Block_customer/<int:id>', methods=['POST'])
 @auth_required('token')
 @roles_required("admin")
-def Block_customer():
-    data = request.get_json()
-    user=app.security.datastore.find_user(email=data['email'])
-    user.active='Blocked'
+def Block_customer(id):
+    customer = Customer.query.get(id)
+    user=app.security.datastore.find_user(id=customer.login_id)
+    user.active=False
+    customer.status="Blocked"
     db.session.commit()
     return jsonify({"message": "User blocked successfully"}), 201
 
 
-@app.route('/api/Unblock_customer', methods=['POST'])
+@app.route('/api/Unblock_customer<int:id>', methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
-def Unblock_customer():
-    data = request.get_json()
-    user=app.security.datastore.find_user(email=data['email'])
-    user.active='Active'
+def Unblock_customer(id):
+    customer = Customer.query.get(id)
+    user=app.security.datastore.find_user(id=customer.login_id)
+    user.active=True
+    customer.status="Active"
     db.session.commit()
     return jsonify({"message": "User unblocked successfully"}), 201
 
-@app.route('/api/Block_professional', methods=['POST'])
+@app.route('/api/Block_professional<int:id>', methods=['POST'])
 @auth_required('token')
 @roles_required('user')
-def Block_professional():
-    data = request.get_json()
-    user=app.security.datastore.find_user(email=data['email'])
-    user.active='Blocked'
+def Block_professional(id):
+    data = Professional.query.get(id)
+    user=app.security.datastore.find_user(id=data.login_id)
+    user.active=False
+    data.status="Blocked"
     db.session.commit()
     return jsonify({"message": "User blocked successfully"}), 201
 
-@app.route('/api/Unblock_professional', methods=['POST'])
+@app.route('/api/Unblock_professional<int:id>', methods=['POST'])
 @auth_required('token')
 @roles_required('user')
-def Unblock_professional():
-    data = request.get_json()
-    user=app.security.datastore.find_user(email=data['email'])
-    user.active='Active'
+def Unblock_professional(id):
+    data = Professional.query.get(id)
+    user=app.security.datastore.find_user(id=data.login_id)
+    user.active=True
+    data.status="Active"
     db.session.commit()
     return jsonify({"message": "User unblocked successfully"}), 201
 
 #--------------------------------------------------------------CUST APIS----------------------------------------------------------------------------
 
+@app.route("/api/cutomer_profile",methods=['GET','POST'])
+@auth_required('token')
+@roles_required('customer')
+def cutomer_profile():
+    customer= Customer.query.get(current_user.id)
+    if request.method=='POST':
+        data= request.get_json()
+        customer.fullname = data['fullname']
+        customer.address = data['address']
+        customer.phone = data['phone']
+        customer.pincode = data['pincode']
+        customer.address = data['address']
+        db.session.commit()
+        return jsonify("Profile updated successfully")
+    return jsonify(customer.to_dict())
+        
+@app.route("/api/customer_review/<int:id>", methods=["POST"])
+@auth_required('token')
+@roles_required('customer')
+def customer_review(self,id):
+        data= request.get_json()
+        request = Request.query.get(id)
+        request.remarks = data["request_remarks"]
+        request.rating = data["request_rating"]
+        request.status = "completed"
+        service = Service.query.get(request.service_id)
+        service.rating = (service.rating +  data["request_rating"])/2
+        db.session.commit()
+        return {"message" : " Remarks added successfully"}
+
+
+
 @app.route("/api/customer_search", methods=['POST'])
 @auth_required('token')
-@roles_required('user')
+@roles_required('customer')
 def customer_search():
     data = request.get_json()
     query = data['query'].lower()
@@ -210,8 +246,35 @@ def customer_search():
 
 
 
+
 #---------------------------------------------------------------PROF APIS---------------------------------------------------
 
+@app.route("/api/professional_profile", methods=["POST","GET"])
+@auth_required('token')
+@roles_required('professional') 
+def professional_profile():
+    professional = Professional.query.get(current_user.id)
+    if request.method=='POST':
+        data= request.get_json()
+        professional.fullname = data['fullname']
+        professional.address = data['address']
+        professional.phone = data['phone'] 
+        professional.pincode = data['pincode']
+        professional.experience = data['experience']
+        db.session.commit()
+        return jsonify("Profile updated successfully")
+    return jsonify(professional.to_dict())
+
+
+
+@app.route("/api/accept_request/<int:id>", methods=["POST"])
+@auth_required('token')
+@roles_required('professional')
+def accept_request(self,id):
+    request = Request.query.get(id)
+    request.professional_id= current_user.id
+    db.session.commit()
+    return {"message": "Request Accepted successfully"}, 200
 
 
 

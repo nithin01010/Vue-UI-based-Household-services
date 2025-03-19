@@ -73,25 +73,9 @@ class Requests(Resource):
         db.session.commit()
         return {"message": "Request updated successfully"}, 200
     
-    @auth_required('token')
-    @roles_required('professional')
-    def professional_accept(self,id):
-        request = Request.query.get(id)
-        request.professional_id= current_user.id
-        db.session.commit()
-        return {"message": "Request Accepted successfully"}, 200
 
     
-    @auth_required('token')
-    @roles_required('user')
-    def customer_review(self,id):
-        args= parser.parse_args()
-        request = Request.query.get(id)
-        request.remarks = args["request_remarks"]
-        request.rating = args["request_rating"]
-        request.status = "completed"
-        db.session.commit()
-        return {"message" : " Remarks added successfully"}
+    
     
     
     @auth_required('token')
@@ -165,7 +149,8 @@ class service(Resource):
 
 
 
-api.add_resource(Requests, '/api/get_requests', '/api/create_request', '/api/update_request/<int:id>','/api/delete_request/<int:id>')
+api.add_resource(Requests, '/api/get_requests', '/api/create_request', '/api/update_request/<int:id>',
+                 '/api/delete_request/<int:id>')
 
 api.add_resource(service, '/api/get_services', '/api/create_service', '/api/update_service/<int:id>',
                  '/api/delete_service/<int:id>')

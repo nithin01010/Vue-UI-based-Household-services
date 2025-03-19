@@ -30,7 +30,7 @@ with app.app_context():
             email="user@admin.com",
             username="admin01",
             password=hash_password("1234"),
-            roles=["admin"]
+            roles=["admin"] 
         )
     if not app.security.datastore.find_user(email="user1@user.com"):
         app.security.datastore.create_user(
