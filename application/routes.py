@@ -1,6 +1,8 @@
 from flask import current_app as app,jsonify,request
 from .models import *
+from flask_login import login_user
 from flask_security import hash_password,auth_required,roles_required,current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 from .database import db
 @app.route('/api/admin')
 @auth_required('token') #Auth
@@ -23,6 +25,19 @@ def User_home():
         }
     )
 
+@app.route("/api/login")
+def login():
+    data = request.get_json()
+    user = app.security.datastore.find_user(email=data["email"])
+    if user :
+        if check_password_hash(user.password, data["password"]):
+            login_user(user)
+            return jsonify({"id": user.id,"name" : user.username, "token": user.get_auth_token()}), 200
+        else:
+            return jsonify({"message" : "Wrong password"}),400
+    return jsonify({"message": "Invalid email"}), 400
+
+
 @app.route("/api/C_register", methods=["POST"])
 def C_register():
     data = request.get_json()
@@ -30,7 +45,7 @@ def C_register():
         app.security.datastore.create_user(
             email=data["email"],
             username=data["username"],
-            password=hash_password(data["password"]),
+            password=generate_password_hash(data["password"]),
             roles=["customer"]
         )
         user1=app.security.datastore.find_user(email=data["email"]).id
@@ -38,7 +53,7 @@ def C_register():
                             number=data['number'] ,status="Pending")
         db.session.add(customer)
         db.session.commit()
-        return jsonify({"message": "User created successfully"}), 201
+        return jsonify({"message": "User created successfully"}), 200
     return jsonify({"message": "User Already exists"}), 400
 
 
@@ -49,12 +64,12 @@ def P_register():
         app.security.datastore.create_user(
             email=data["email"],
             username=data["username"],
-            password=hash_password(data["password"]),
+            password=generate_password_hash(data["password"]),
             roles=["customer"]
         )
         user1=app.security.datastore.find_user(email=data["email"]).id
         professional = Professional(fullname=data['username'], address=data['address'], pincode=data['pincode'],
-                                     login_id=user1,number=data['number'] ,status="Under Verification",experince = data['experince'],
+                                     login_id=user1,number=data['number'] ,status="Under Verification",experience = data['experince'],
                                      service_id= data['service_id'])
         db.session.add(professional)
         db.session.commit()
@@ -265,6 +280,24 @@ def professional_profile():
         return jsonify("Profile updated successfully")
     return jsonify(professional.to_dict())
 
+@app.route("/api/reject_request/<int:id>", methods=["POST"])
+@auth_required('token')
+@roles_required('professional')
+def reject_request(id):
+    request = Request.query.get(id)
+    professional = Professional.query.filter_by(login_id=current_user.id).first()
+    if professional is not None:
+        request.hidden_from_professionals.append(professional)
+        db.session.commit()
+    
+    all_professionals = Professional.query.filter_by(service_id=request.service_id).all()
+    all_rejected = all(pro in request.hidden_from_professionals for pro in all_professionals)
+    
+    if all_rejected:
+        request.status = "rejected"
+        db.session.commit()
+    
+    return {"message": "Request rejected successfully"}
 
 
 @app.route("/api/accept_request/<int:id>", methods=["POST"])
@@ -273,8 +306,26 @@ def professional_profile():
 def accept_request(self,id):
     request = Request.query.get(id)
     request.professional_id= current_user.id
+    request.status=""
     db.session.commit()
     return {"message": "Request Accepted successfully"}, 200
+
+@app.route("/api/professional_search")
+@auth_required('token')
+@roles_required('professional')
+def professional_search():
+    service_id = current_user.service_id
+    hidden_request_ids = db.session.query(hidden_requests.c.request_id).filter(hidden_requests.c.professional_id == current_user.id)
+    if request.method == 'POST':
+        category = request.form.get('category')
+        query = request.form.get('query').lower()
+        if category == 'location':
+            results = Request.query.join(Customer).filter(Request.service_id == service_id,Request.status == 'requested', 
+                Customer.address.ilike(f'%{query}%'),~Request.id.in_(hidden_request_ids)).all()
+        elif category == 'pincode':
+            results = Request.query.join(Customer).filter(Request.service_id == service_id,Request.status == 'requested',
+                    Customer.pincode.ilike(f'%{query}%'),~Request.id.in_(hidden_request_ids) ).all()
+    return
 
 
 

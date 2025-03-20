@@ -25,13 +25,9 @@ Here are all the routes in the provided Flask application:
    - `/P_logout`: Professional logout.
    - `/P_login`: Professional login.
    - `/P_DashBoard/<int:P_id>`: Professional dashboard.
-   - `/P_Profile/<int:P_id>`: Professional profile.
-   - `/P_Accept/<int:P_id>/<int:request_id>`: Professional accept request.
-   - `/P_Reject/<int:P_id>/<int:request_id>`: Professional reject request.
-   - `/P_hidden_request/<int:request_id>`: Professional hide request.
-   - `/P_hidden_professional/<int:professional_id>`: Professional hide professional.
-   - `/P_hidden_customer/<int:customer_id>`: Professional hide customer.
-   - `/P_hidden_service/<int:service_id>`: Professional hide service.
+   - `/P_Profile/<int:P_id>`: Professional profile.------------------------------
+   - `/P_Accept/<int:P_id>/<int:request_id>`: Professional accept request.---------------------
+   - `/P_Reject/<int:P_id>/<int:request_id>`: Professional reject request.---------------------
    - `/P_summary/<int:P_id>`: Professional summary.
    - `/P_Search/<int:P_id>`: Professional search.
 
