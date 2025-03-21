@@ -1,29 +1,13 @@
-from flask import current_app as app,jsonify,request
+from flask import current_app as app,jsonify,request,render_template
 from .models import *
 from flask_login import login_user
 from flask_security import hash_password,auth_required,roles_required,current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import db
-@app.route('/api/admin')
-@auth_required('token') #Auth
-@roles_required('admin') #RBAC
-def admin():
-    return {
-        "msg" : "Admin here!"
-    }
+@app.route('/')
+def home():
+    return render_template("index.html")
 
-@app.route("/api/user")
-@roles_required('user')
-@auth_required('token') #Auth
-def User_home():
-    user = current_user
-    return jsonify(
-        {
-            "username": user.username,
-            "email": user.email,
-            "password": user.password
-        }
-    )
 
 @app.route("/api/login")
 def login():
