@@ -9,8 +9,8 @@ import Navbar from './components/Navbar.js';
 const routes = [
     { path: '/', component: Home },
     { path: '/login', component: Login },
-    { path: '/customer-register', component: C_register },
-    { path: '/provider-register', component: P_register }
+    { path: '/C_register', component: C_register },
+    { path: '/P_register', component: P_register }
 ];
 
 // Create Router Instance

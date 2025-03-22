@@ -1,12 +1,13 @@
 export default{
     template : `
     <div class="row boader">
-        <div class="col">
-            <div class="boarder">
-                <h1> About Us </h1>
-                <p>Lorem ipsum arcu vel ipsum semper, vel semper arcu tincidunt. Duis vel neque vel mauris feugiat fermentum. Sed vel turpis vel felis ultrices pulvinar. Sed vel justo at neque pharetra scelerisque. Nulla facilisi. Sed lobortis ipsum vel ipsum tincidunt, sed elementum mauris lobortis. Nulla facilisi. Sed vel justo at neque pharetra scelerisque. Nulla facilisi. Sed lobortis ipsum vel ipsum tincidunt
-                </p>
-            </div>
+        <div class="col-10 boarder">
+                Nav bar
+        </div>
+        <div class="col-2 boarder">
+            <router-link class="btn btn-primary my-2" to="/login">Login</router-link>
+            <router-link class="btn btn-warning my-2" to="/C_register">Create Account</router-link>
+            <router-link class="btn btn-warning my-2" to="/P_register">Registeras Professional</router-link>
         </div>
     </div>    `
 }

@@ -1,9 +1,9 @@
 export default{
     template : `
     <div class="row boader">
-        <div class="col" style="height : 750px;">
-            <div class="boarder mx-auto mt-5" style="height : 750px;">
-                svds register
+        <div class="col" >
+            <div class="text-center mt-2 my-3">
+                Household Services
             </div>
         </div>
     </div>    `
