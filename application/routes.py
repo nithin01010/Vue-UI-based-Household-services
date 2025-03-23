@@ -26,7 +26,7 @@ def login():
             return jsonify({"id": user.id,"name" : user.username, "token": user.get_auth_token()}), 200
         else:
             return jsonify({"message" : "Wrong password"}),400
-    return jsonify({"message": "Invalid email"}), 400
+    return jsonify({"message": "Account Not found"}), 400
 
 
 @app.route("/api/C_register", methods=["POST"])

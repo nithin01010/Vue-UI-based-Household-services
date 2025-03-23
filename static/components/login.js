@@ -14,7 +14,9 @@ export default{
                 <input type="password" class="form-control" v-model="formData.password" id="password" placeholder="Enter your password" required>
               </div>
               <button @click="loginUser" class="btn btn-primary w-100">Login</button>
-              
+              <div v-if="error" class="alert alert-danger text-center mt-3">
+                {{ error }}
+              </div>
             <div class="d-flex justify-content-between mt-3">
                 <router-link class="btn btn-primary " to="/P_register">Registeras Professional</router-link>
                 <router-link class="btn btn-warning " to="/C_register">Create Account</router-link>
@@ -29,7 +31,8 @@ export default{
         formData:{
           email: "",
           password: ""
-        }
+        },
+        error: ""
       }
     },
     methods : {
@@ -42,12 +45,14 @@ export default{
           body: JSON.stringify(this.formData)
         })  
         .then(response => response.json())
-        .then(data => {
+        then(data => {
           localStorage.setItem("auth_token",data['token'])
           localStorage.setItem("id",data['id'])
-          this.$router.push('/dashboard')
-        }
-      )
+          this.$router.push('/dashboard')})
+        }.catch(error => {
+          this.error = error;
+        
+        })
+      
       }
-    }
 }

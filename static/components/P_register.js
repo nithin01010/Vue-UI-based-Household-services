@@ -4,7 +4,7 @@ export default {
         <div class="card shadow-sm" style="width: 30rem;">
           <div class="card-body">
             <h2 class="card-title text-center text-primary">Service Professional Signup</h2>
-            <form @submit.prevent="register" enctype="multipart/form-data" class="mt-4">
+            <form  enctype="multipart/form-data" class="mt-4">
               <div class="mb-3">
                 <label for="email" class="form-label">Email ID (Username):</label>
                 <input type="email" id="email" class="form-control" v-model="formData.email" placeholder="Enter your email" required>
@@ -54,7 +54,7 @@ export default {
               <div v-if="error" class="alert alert-danger text-center mt-3">
                 {{ error }}
               </div>
-              <button type="submit" class="btn btn-primary w-100">Register</button>
+              <button @click="register" class="btn btn-primary w-100">Register</button>
               <div class="text-center mt-3">
                 <router-link class="btn btn-outline-success me-2" to="/login">Login</router-link>
               </div>
@@ -93,30 +93,25 @@ export default {
       .catch(err => console.error('Error fetching services:', err));
     },
     methods: {
-      register: function() {
-        print("medoths")
-        fetch('/api/P_register', {
-          method: 'POST',
-          headers: {
-            "Content-Type": 'application/json'
-          },
-          body: JSON.stringify(this.formData)
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error("Registration failed");
-          }
-          return response.json();
-        })
-        .then(data => {
-          console.log("Registration successful", data);
-          this.$router.push('/login');
-        })
-        .catch(error => {
-          console.error(error);
-          this.error = error.message || "An error occurred during registration";
-        });
+        register: function() {
+          fetch('/api/P_register', {
+            method: 'POST',
+            headers: {
+              "Content-Type": 'application/json'
+            },
+            body: JSON.stringify(this.formData)
+          })
+          .then(response => response.json())
+          .then(data => {
+            alert("Account Created Success")
+            this.$router.push('/login')
+          })
+          .catch(error => {
+            this.error = error.message || "An error occurred during registration";
+            console.error(error);
+          });
+        }
       }
-    }
+      
   }
   
