@@ -1,15 +1,22 @@
 from flask import current_app as app,jsonify,request,render_template
 from .models import *
 from flask_login import login_user
-from flask_security import hash_password,auth_required,roles_required,current_user
+from flask_security import hash_password,auth_required,roles_required,current_user,roles_accepted
 from werkzeug.security import generate_password_hash, check_password_hash
 from .database import db
 @app.route('/')
 def home():
     return render_template("index.html")
 
+@app.route("/api/home", methods=["GET"])
+@auth_required('token')
+@roles_accepted('customer','admin','professional')
+def home12():
+    user=current_user
+    return jsonify({"Username": user.username,"email": user.email , "password" : user.password}), 200
 
-@app.route("/api/login")
+
+@app.route("/api/login" , methods=["POST"])
 def login():
     data = request.get_json()
     user = app.security.datastore.find_user(email=data["email"])
@@ -44,20 +51,21 @@ def C_register():
 @app.route("/api/P_register", methods=["POST"])
 def P_register():
     data = request.get_json()
+    print(data,"api")
     if not app.security.datastore.find_user(email=data["email"]):
         app.security.datastore.create_user(
             email=data["email"],
             username=data["username"],
             password=generate_password_hash(data["password"]),
-            roles=["customer"]
+            roles=["professional"]
         )
         user1=app.security.datastore.find_user(email=data["email"]).id
         professional = Professional(fullname=data['username'], address=data['address'], pincode=data['pincode'],
-                                     login_id=user1,number=data['number'] ,status="Under Verification",experience = data['experince'],
+                                     login_id=user1,number=data['number'] ,status="Under Verification",experience = data['experience'],
                                      service_id= data['service_id'])
         db.session.add(professional)
         db.session.commit()
-        return jsonify({"message": "User created successfully"}), 201
+        return jsonify({"message": "User created successfully"}), 200
     return jsonify({"message": "User Already exists"}), 400
 #-------------------------------------------------------------ADMIN APIs----------------------------------------------------------------------
 

@@ -74,10 +74,6 @@ class Requests(Resource):
         return {"message": "Request updated successfully"}, 200
     
 
-    
-    
-    
-    
     @auth_required('token')
     @roles_accepted('customer','admin','professional')
     def delete(self,id):
@@ -93,10 +89,8 @@ class Requests(Resource):
         db.session.commit()
         return {"message": "Request deleted successfully"}, 200
     
-    
+    #---------------------------------------------------------------------------------------------------------------------
 class service(Resource):
-    @auth_required('token')
-    @roles_accepted('admin','customer')
     def get(self):
         services=Service.query.all()
         service_json=[]
@@ -106,7 +100,8 @@ class service(Resource):
             this_service["name"]=service.name
             this_service["price"]=service.price
             this_service["rating"]=service.rating
-            this_service["date_added"]=service.date_added
+            this_service["description"]=service.description
+            this_service["category"]=service.category
             service_json.append(this_service)
         if service_json :
             return service_json

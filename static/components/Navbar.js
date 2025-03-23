@@ -1,13 +1,17 @@
-export default{
-    template : `
-    <div class="row boader">
-        <div class="col-10 boarder">
-                Nav bar
+export default {
+    template: `
+    <div class="row border-bottom py-3 align-items-center">
+        <!-- Branding or Logo Section -->
+        <div class="col-8 d-flex align-items-center">
+            <h2 class="mb-0">Hiuse hild</h2>
         </div>
-        <div class="col-2 boarder">
-            <router-link class="btn btn-primary my-2" to="/login">Login</router-link>
-            <router-link class="btn btn-warning my-2" to="/C_register">Create Account</router-link>
-            <router-link class="btn btn-warning my-2" to="/P_register">Registeras Professional</router-link>
+
+        <!-- Navigation Links -->
+        <div class="col-3 text-end">
+            <router-link class="btn btn-outline-success me-2" to="/login">Login</router-link>
+            <router-link class="btn btn-outline-warning me-2" to="/C_register">Create Account</router-link>
+            <router-link class="btn btn-outline-warning me-2" to="/P_register">Register as Professional</router-link>
         </div>
-    </div>    `
-}
+    </div>
+    `
+};
