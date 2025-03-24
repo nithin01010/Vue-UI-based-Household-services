@@ -44,15 +44,20 @@ export default{
           },
           body: JSON.stringify(this.formData)
         })  
-        .then(response => response.json())
-        then(data => {
-          localStorage.setItem("auth_token",data['token'])
-          localStorage.setItem("id",data['id'])
-          this.$router.push('/dashboard')})
-        }.catch(error => {
-          this.error = error;
-        
+        .then(response =>  response.json())
+        .then(data => {
+            if(data['token']){
+              localStorage.setItem("auth_token",data['token']);
+              localStorage.setItem("id",data['id']);
+              localStorage.setItem("username",data['name'])
+              this.$router.push('/Dashboard');
+            }
+            else {
+              this.error = data.message;
+            }
         })
       
       }
-}
+
+    }
+  }

@@ -3,6 +3,7 @@ from .models import *
 from flask_login import login_user
 from flask_security import hash_password,auth_required,roles_required,current_user,roles_accepted
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy.exc import IntegrityError
 from .database import db
 @app.route('/')
 def home():
@@ -13,7 +14,7 @@ def home():
 @roles_accepted('customer','admin','professional')
 def home12():
     user=current_user
-    return jsonify({"Username": user.username,"email": user.email , "password" : user.password}), 200
+    return jsonify({"Username": user.username,"email": user.email , "password" : user.password,"token": user.get_auth_token()}), 200
 
 
 @app.route("/api/login" , methods=["POST"])
@@ -28,43 +29,60 @@ def login():
             return jsonify({"message" : "Wrong password"}),400
     return jsonify({"message": "Account Not found"}), 400
 
-
 @app.route("/api/C_register", methods=["POST"])
 def C_register():
     data = request.get_json()
     if not app.security.datastore.find_user(email=data["email"]):
-        app.security.datastore.create_user(
-            email=data["email"],
-            username=data["username"],
-            password=generate_password_hash(data["password"]),
-            roles=["customer"]
-        )
+        try:
+            app.security.datastore.create_user(
+                email=data.get("email"),            # Use .get() to avoid KeyError
+                username=data.get("username"),
+                password=generate_password_hash(data.get("password", "")),
+                roles=["customer"]
+            )
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()  # Rollback to maintain DB integrity
+            return jsonify({"message": "Username or email already exists"}), 400
         user1=app.security.datastore.find_user(email=data["email"]).id
-        customer = Customer(fullname=data['username'], address=data['address'], pincode=data['pincode'], login_id=user1,
-                            number=data['number'] ,status="Pending")
-        db.session.add(customer)
-        db.session.commit()
-        return jsonify({"message": "User created successfully"}), 200
+        try:
+            customer = Customer(fullname=data['username'], address=data['address'], pincode=data['pincode'], login_id=user1,
+                                number=data['number'] ,status="Active")
+            db.session.add(customer)
+            db.session.commit()
+            return jsonify({"message": "User created successfully"}), 200
+        
+        except Exception as e:
+            return jsonify({"message": "Enter valid details"}),500
+        
     return jsonify({"message": "User Already exists"}), 400
 
 
 @app.route("/api/P_register", methods=["POST"])
 def P_register():
     data = request.get_json()
-    print(data,"api")
     if not app.security.datastore.find_user(email=data["email"]):
-        app.security.datastore.create_user(
-            email=data["email"],
-            username=data["username"],
-            password=generate_password_hash(data["password"]),
-            roles=["professional"]
-        )
+        try:
+            app.security.datastore.create_user(
+                email=data.get("email"),            # Use .get() to avoid KeyError
+                username=data.get("username"),
+                password=generate_password_hash(data.get("password", "")),
+                roles=["customer"]
+            )
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()  # Rollback to maintain DB integrity
+            return jsonify({"message": "Username or email already exists"}), 400
         user1=app.security.datastore.find_user(email=data["email"]).id
-        professional = Professional(fullname=data['username'], address=data['address'], pincode=data['pincode'],
-                                     login_id=user1,number=data['number'] ,status="Under Verification",experience = data['experience'],
-                                     service_id= data['service_id'])
-        db.session.add(professional)
-        db.session.commit()
+        try:
+            professional = Professional(fullname=data['username'], address=data['address'], pincode=data['pincode'],
+                                        login_id=user1,number=data['number'] ,status="Under Verification",experience = data['experience'],
+                                        service_id= data['service_id'])
+            db.session.add(professional)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback() 
+            return jsonify({"message": "Enter valid details"}),500
         return jsonify({"message": "User created successfully"}), 200
     return jsonify({"message": "User Already exists"}), 400
 #-------------------------------------------------------------ADMIN APIs----------------------------------------------------------------------

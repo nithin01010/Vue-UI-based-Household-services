@@ -101,15 +101,23 @@ export default {
             },
             body: JSON.stringify(this.formData)
           })
-          .then(response => response.json())
-          .then(data => {
-            alert("Account Created Success")
-            this.$router.push('/login')
-          })
-          .catch(error => {
-            this.error = error.message || "An error occurred during registration";
-            console.error(error);
-          });
+          
+        .then(async response => {
+          if (response.ok) {
+              return response.json();
+          } else {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Failed to create account.");
+          }
+      })
+      .then(data => {
+          alert("Account Created Successfully");
+          this.$router.push('/login');
+      })
+      .catch(error => {
+          this.error = error;
+          alert(`Error: ${error.message}`); 
+      });
         }
       }
       

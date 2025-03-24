@@ -63,23 +63,31 @@ export default {
     },
     methods: {
       register: function() {
-        print("medoths")
+        console.log("methods");
         fetch('/api/C_register', {
-          method: 'POST',
-          headers: {
-            "Content-Type": 'application/json'
-          },
-          body: JSON.stringify(this.formData)
+            method: 'POST',
+            headers: {
+                "Content-Type": 'application/json'
+            },
+            body: JSON.stringify(this.formData)
         })
-        .then(response => response.json())
+        .then(async response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Failed to create account.");
+            }
+        })
         .then(data => {
-          alert("Account Created Success")
-          this.$router.push('/login')
+            alert("Account Created Successfully");
+            this.$router.push('/login');
         })
         .catch(error => {
-          this.error = error.message || "An error occurred during registration";
+            this.error = error;
+            alert(`Error: ${error.message}`); 
         });
-      }
+    }    
     }
   }
   

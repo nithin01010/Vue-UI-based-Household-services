@@ -12,7 +12,7 @@ const routes = [
     { path: '/login', component: Login },
     { path: '/C_register', component: C_register },
     { path: '/P_register', component: P_register },
-    { path: '/dashboard', component: Dashboard }
+    { path: '/Dashboard', component: Dashboard }
 ];
 
 // Create Router Instance

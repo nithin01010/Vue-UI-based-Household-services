@@ -4,13 +4,14 @@ export default{
         <div class="col">
             <div class="boarder">
                 {{userData.email}}
+                {{userData.token}}
             </div>
         </div>
     </div>    `
     ,
     data: function(){
         return {
-            userData: ""
+            userData:""
         }
     },
     mounted() {
