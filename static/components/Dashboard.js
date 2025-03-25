@@ -136,18 +136,7 @@ export default {
         .catch(error => console.error("Error fetching service requests:", error));
     
       // Fetch Professionals
-      fetch('/api/view_professionals', {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authentication-Token": localStorage.getItem("auth_token")
-        }
-      })
-        .then(response => response.json())
-        .then(data => {
-          this.professionals = data;
-        })
-        .catch(error => console.error("Error fetching professionals:", error));
+      this.loaduser()
     },
     
     methods: {
@@ -166,7 +155,7 @@ export default {
         })
         .then(response => {
           if (response.ok) {
-            alert("Professional accepted successfully!");
+            this.loaduser()
           }
         })
         .catch(error => console.error("Error accepting professional:", error));
@@ -182,11 +171,27 @@ export default {
         })
         .then(response => {
           if (response.ok) {
-            alert("Professional blocked successfully!");
+            this.loaduser()
           }
         })
-        .catch(error => console.error("Error blocking professional:", error));
+        .catch(error => console.error("Error blocking professional:", error))
+        },
+
+        loaduser(){
+        fetch('/api/view_professionals', {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authentication-Token": localStorage.getItem("auth_token")
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          this.professionals = data;
+        })
+        .catch(error => console.error("Error fetching professionals:", error));
+        }
       }
     }
-  };
+  
   

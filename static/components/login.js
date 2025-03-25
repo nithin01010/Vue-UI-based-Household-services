@@ -50,6 +50,7 @@ export default{
               localStorage.setItem("auth_token",data['token']);
               localStorage.setItem("id",data['id']);
               localStorage.setItem("username",data['name'])
+              localStorage.setItem("role",data["role"])
               if (data["role"]=="customer"){
                 this.$router.push('/C_Dashboard');
               }

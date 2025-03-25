@@ -27,7 +27,6 @@ def login():
             role = UsersRoles.query.filter_by(user_id=user.id).first()  
             if role:
                 role_name = Role.query.get(role.role_id)
-                print(role_name.name)
                 return jsonify({
                     "id": user.id,
                     "name": user.username,
@@ -291,18 +290,24 @@ def customer_search():
     data = request.get_json()
     query = data['query'].lower()
     category = data['category'].lower()
-    if category == 'professional':
-        results = Professional.query.filter(Professional.fullname.ilike(f'%{query}%')).all()
-    elif category == 'service':
-        results = Service.query.filter(Service.name.ilike(f'%{query}%')).all()
+    if category == 'service':
+        services = Service.query.filter(Service.name.ilike(f'%{query}%')).all()
     elif category == 'category':
-            results = Service.query.filter(Service.categorie.ilike(f'%{query}%')).all()
-            results = [s for s in results if Professional.query.filter_by(service_id=s.id).first()]
-    return jsonify(results)
-
-
-
-
+        print("sdfghj")
+        services = Service.query.filter(Service.category.ilike(f'%{query}%')).all()
+    service_json=[]
+    for service in services:
+            this_service={}
+            this_service["id"]=service.id
+            this_service["name"]=service.name
+            this_service["price"]=service.price
+            this_service["rating"]=service.rating
+            this_service["description"]=service.description
+            this_service["category"]=service.category
+            service_json.append(this_service)
+    print(services)
+        
+    return jsonify(service_json)
 
 #---------------------------------------------------------------PROF APIS---------------------------------------------------
 

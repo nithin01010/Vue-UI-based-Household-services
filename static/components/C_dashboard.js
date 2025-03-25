@@ -12,7 +12,7 @@ export default {
                 style="cursor: pointer;"
               >
                 <div class="card-body">
-                  <h5 class="card-title text-center">{{ service }}</h5>
+                  <h5 class="card-title text-center" ><router-link  :to="'/C_booking/'+service" style="text-decoration: none;">{{ service }}</router-link></h5>
                 </div>
               </div>
             </div>
@@ -90,9 +90,6 @@ export default {
             });
         },
     methods: {
-      navigateToBooking(service) {
-        this.$router.push('/open/' + service);
-      },
       redirectToRemarks(requestId) {
         this.$router.push('/remarks/' + requestId);
       }

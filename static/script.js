@@ -10,6 +10,7 @@ import DashboardNavbar from './components/D_nav.js';
 import update_service from './components/update_service.js';
 import A_P_profile from './components/A_P_profile.js';
 import C_Dashboard from './components/C_dashboard.js';
+import C_booking from './components/C_booking.js';
 Vue.use(VueRouter);
 
 // Define your routes (you can add meta properties if needed)
@@ -23,6 +24,7 @@ const routes = [
   {path : '/update_service/:id', component: update_service},
   {path: '/A_professionalprofile/:id' , component: A_P_profile},
   {path : '/C_dashboard', component: C_Dashboard},
+  {path : '/C_booking/:cat', component: C_booking},
 ];
 
 const router = new VueRouter({
@@ -38,10 +40,7 @@ new Vue({
     'footer-bar': Footer
   },
   computed: {
-    // Check the current route and return the appropriate navbar component name
     navbarComponent() {
-      // For example, if you're on the login, register, or home page, show LoginNavbar,
-      // if on Dashboard (or its sub-routes), show DashboardNavbar.
       const path = this.$route.path;
       if (path === '/login' || path === '/C_register' || path === '/P_register' || path === '/') {
         return 'login-navbar';
