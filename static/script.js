@@ -18,7 +18,7 @@ const routes = [
   { path: '/P_register', component: P_register },
   { path: '/Dashboard', component: Dashboard },
   {path: '/new_service', component: new_service},
-  {path : '/update_service/<int:id>', component: update_service}
+  {path : '/update_service/:id', component: update_service}
 ];
 
 const router = new VueRouter({
