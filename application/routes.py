@@ -24,7 +24,16 @@ def login():
     if user :
         if check_password_hash(user.password, data["password"]):
             login_user(user)
-            return jsonify({"id": user.id,"name" : user.username, "token": user.get_auth_token()}), 200
+            role = UsersRoles.query.filter_by(user_id=user.id).first()  
+            if role:
+                role_name = Role.query.get(role.role_id)
+                print(role_name.name)
+                return jsonify({
+                    "id": user.id,
+                    "name": user.username,
+                    "token": user.get_auth_token(),
+                    "role": role_name.name
+                }), 200
         else:
             return jsonify({"message" : "Wrong password"}),400
     return jsonify({"message": "Account Not found"}), 400
@@ -96,6 +105,13 @@ def accept_professional(id):
     db.session.commit()
     return jsonify({"message": "Professional Accepted successfully"}), 200
 
+@app.route("/api/view_service/<int:id>")
+@auth_required('token')
+@roles_required('admin')
+def view_servie(id):
+    service = Service.query.get(id)
+    return jsonify({"name": service.name, "description": service.description, "price": service.price,"category": service.category}), 200
+
 @app.route('/api/view_customers')
 @auth_required('token')
 @roles_required('admin')
@@ -113,6 +129,14 @@ def view_customers():
         })
     return jsonify(result)
 
+@app.route('/api/view_customer/<int:id>')
+@auth_required('token')
+@roles_required('admin')
+def view_customer(id):
+    customer = Customer.query.get(id)
+    return jsonify({"id": customer.id, "fullname": customer.fullname, "address": customer.address,
+                   "pincode": customer.pincode, "number": customer.number, "status": customer.status}), 200
+
 @app.route('/api/view_professionals')
 @auth_required('token')
 @roles_required('admin')
@@ -127,10 +151,19 @@ def view_professionals():
             "pincode": professional.pincode,
             "number": professional.number,
             "status": professional.status,
-            "experince": professional.experience,
+            "experience": professional.experience,
             "service_id": professional.service_id
         })
     return jsonify(result)
+
+@app.route('/api/view_professional/<int:id>')
+@auth_required('token')
+@roles_required('admin')
+def view_professional(id):
+    professional = Professional.query.get(id)
+    return jsonify({"id": professional.id, "fullname": professional.fullname, "address": professional.address,
+                   "pincode": professional.pincode, "number": professional.number, "status": professional.status,
+                   "experience": professional.experience, "service_name": professional.service.name}), 200
 
 @app.route('/api/view_requests')
 @auth_required('token')
@@ -288,6 +321,23 @@ def professional_profile():
         db.session.commit()
         return jsonify("Profile updated successfully")
     return jsonify(professional.to_dict())
+
+@app.route("/api/update_professional", methods=["POST"])
+@auth_required('token')
+@roles_required('professional')
+def update_professional():
+    professional = Professional.query.filter_by(login_id=current_user.id)
+    data = request.get_json()
+    professional.fullname = data['name']
+    professional.address = data['address']
+    professional.phone = data['phone']
+    professional.pincode = data['pincode']
+    professional.service_id = data['service_id']
+    professional.experience = data['experience']
+    db.session.commit()
+    return jsonify("Profile updated successfully")
+
+
 
 @app.route("/api/reject_request/<int:id>", methods=["POST"])
 @auth_required('token')

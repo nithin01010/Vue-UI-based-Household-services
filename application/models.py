@@ -46,7 +46,7 @@ class Professional(db.Model):
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
     login_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  
     fullname = db.Column(db.String(150), nullable=False)
-    service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=False)
+    service_id = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=True)
     experience = db.Column(db.Integer, nullable=False)
     address = db.Column(db.String(250), nullable=False)
     pincode = db.Column(db.Integer, nullable=False)

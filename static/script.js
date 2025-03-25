@@ -8,6 +8,8 @@ import new_service from './components/new_service.js';
 import LoginNavbar from './components/Navbar.js';
 import DashboardNavbar from './components/D_nav.js';
 import update_service from './components/update_service.js';
+import A_P_profile from './components/A_P_profile.js';
+import C_Dashboard from './components/C_dashboard.js';
 Vue.use(VueRouter);
 
 // Define your routes (you can add meta properties if needed)
@@ -18,7 +20,9 @@ const routes = [
   { path: '/P_register', component: P_register },
   { path: '/Dashboard', component: Dashboard },
   {path: '/new_service', component: new_service},
-  {path : '/update_service/:id', component: update_service}
+  {path : '/update_service/:id', component: update_service},
+  {path: '/A_professionalprofile/:id' , component: A_P_profile},
+  {path : '/C_dashboard', component: C_Dashboard},
 ];
 
 const router = new VueRouter({

@@ -4,8 +4,8 @@ export default {
       <div class="col-md-6">
         <div class="card shadow">
           <div class="card-body">
-            <h2 class="card-title text-primary text-center mb-4">Update Service</h2>
-            <form @submit.prevent="updateService">
+            <h2 class="card-title text-primary text-center mb-4">New Service</h2>
+            <form >
               <div class="mb-3">
                 <label for="service-name" class="form-label fw-bold">Service Name:</label>
                 <input type="text" class="form-control" id="service-name" v-model="service_name" required>
@@ -31,7 +31,7 @@ export default {
               <div v-if="error" class="alert alert-danger text-center">{{ error }}</div>
               
               <div class="text-center">
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button @click="create" class="btn btn-primary">Create new service</button>
               </div>
             </form>
           </div>
@@ -47,37 +47,14 @@ export default {
       service_price: '',
       service_category: '',
       // Populate categories as needed or fetch them from an API
-      categories: ["Plumbing", "Electrical", "Cleaning"],
+      categories: ["Plumbing", "Electrical", "Cleaning","AC","TV repair","others"],
       error: ''
     };
   },
-  mounted() {
-    // Assuming the service id is passed as a route parameter
-    this.service_id = this.$route.params.id;
-
-    // Fetch the existing service details for pre-population
-    fetch(`/api/get_service/${this.service_id}`, {
-      method: 'GET',
-      headers: {
-        "Content-Type": "application/json",
-        "Authentication-Token": localStorage.getItem("auth_token")
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      this.service_name = data.name;
-      this.service_description = data.description;
-      this.service_price = data.price;
-      this.service_category = data.category;
-    })
-    .catch(error => {
-      this.error = "Error fetching service details: " + error.message;
-    });
-  },
   methods: {
-    updateService() {
-      fetch(`/api/update_service/${this.service_id}`, {
-        method: 'PUT',
+    create() {
+      fetch(`/api/create_service`, {
+        method: 'POST',
         headers: {
           "Content-Type": "application/json",
           "Authentication-Token": localStorage.getItem("auth_token")
@@ -89,17 +66,9 @@ export default {
           service_category: this.service_category
         })
       })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(err => {
-            throw new Error(err.message || "Failed to update service");
-          });
-        }
-        return response.json();
-      })
+      .then(response => response.json())
       .then(data => {
         alert(data.message);
-        // Optionally redirect after a successful update:
         this.$router.push('/Dashboard');
       })
       .catch(err => {

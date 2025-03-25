@@ -50,7 +50,13 @@ export default{
               localStorage.setItem("auth_token",data['token']);
               localStorage.setItem("id",data['id']);
               localStorage.setItem("username",data['name'])
-              this.$router.push('/Dashboard');
+              if (data["role"]=="customer"){
+                this.$router.push('/C_Dashboard');
+              }
+              else if (data["role"]=="professional"){
+                this.$router.push('/P_Dashboard');
+              }
+              else{this.$router.push('/Dashboard');}
             }
             else {
               this.error = data.message;

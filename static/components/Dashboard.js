@@ -40,14 +40,15 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(professional, index) in professionals" :key="professional.id">
-                <td><a :href="'/check_professional/' + professional.id">{{ professional.id }}</a></td>
+                <td><router-link :to="'/A_professionalprofile/'+professional.id " >{{index+1}}</router-link>
+                </td>
                 <td>{{ professional.fullname }}</td>
                 <td>{{ professional.experience }}</td>
                 <td>{{ getServiceName(professional.service_id) || 'Unknown Service' }}</td>
                 <td>
                   <span v-if="professional.status === 'Under Verification'">
-                    <a @click="accept_professional(professional.id)" style="cursor: pointer;">Accept</a> |
-                    <a @click="block_professional(professional.id)" style="cursor: pointer;">Reject</a>
+                    <a @click="accept_professional(professional.id)" class="btn btn-primary" style="cursor: pointer;">Accept</a> |
+                    <a @click="block_professional(professional.id)"  class="btn btn-warning" style="cursor: pointer;">Reject</a>
                   </span>
                   <span v-else>{{ professional.status }}</span>
                 </td>
@@ -105,7 +106,6 @@ export default {
         .then(data => {
           this.userData = data;
         })
-        .catch(error => console.error("Error fetching user data:", error));
     
       // Fetch Services
       fetch('/api/get_services', {

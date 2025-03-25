@@ -142,6 +142,11 @@ class service(Resource):
         service = Service.query.get(id)
         if not service:
             return {"message": "Service not found"}, 404
+        professionals=Professional.query.filter_by(service_id=id)
+        if professionals:
+            for prof in professionals:
+                prof.service_id=None
+                db.session.commit()
         db.session.delete(service)
         db.session.commit()
         return {"message": "Service deleted successfully"}, 200
