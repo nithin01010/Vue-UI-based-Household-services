@@ -4,7 +4,7 @@ export default {
         <h2 class="text-center text-primary mb-4">Best {{ cato }} Packages</h2>
 
         <div v-if="services.length" class="table-responsive">
-            <form @submit.prevent="book">
+            <form >
                 <table class="table table-striped table-bordered table-hover rounded-3 overflow-hidden">
                     <thead class="bg-info text-white">
                         <tr>
@@ -24,7 +24,7 @@ export default {
                             <td>
                                 <button 
                                     type="submit" 
-                                    @click="selectedService = service.id" 
+                                    @click="book(service.id)" 
                                     class="btn btn-primary btn-sm rounded-pill">
                                     Book
                                 </button>
@@ -82,7 +82,7 @@ export default {
           .then(response => response.json())
           .then(data => {
             alert('Booking successful!')
-            this.$router.push('C_dashboard')
+            this.$router.push('/C_dashboard')
           })
       }
     }
