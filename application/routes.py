@@ -14,7 +14,7 @@ def home():
 @roles_accepted('customer','admin','professional')
 def home12():
     user=current_user
-    return jsonify({"Username": user.username,"email": user.email , "password" : user.password,"token": user.get_auth_token()}), 200
+    return jsonify({"username": user.username,"email": user.email , "password" : user.password,"token": user.get_auth_token()}), 200
 
 
 @app.route("/api/login" , methods=["POST"])
@@ -87,17 +87,16 @@ def P_register():
     return jsonify({"message": "User Already exists"}), 400
 #-------------------------------------------------------------ADMIN APIs----------------------------------------------------------------------
 
-@app.route("/api/accept_professional")
+@app.route("/api/accept_professional/<int:id>", methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
-def accept_professional():
-    data = request.get_json()
-    professional = Professional.query.get(id=data['id'])
+def accept_professional(id):
+    professional = Professional.query.get(id)
     professional.status = "Active"
     db.session.commit()
     return jsonify({"message": "Professional Accepted successfully"}), 200
 
-@app.route('/api/view_customers',methods=['POST'])
+@app.route('/api/view_customers')
 @auth_required('token')
 @roles_required('admin')
 def view_customers():
@@ -114,7 +113,7 @@ def view_customers():
         })
     return jsonify(result)
 
-@app.route('/api/view_professionals',methods=['POST'])
+@app.route('/api/view_professionals')
 @auth_required('token')
 @roles_required('admin')
 def view_professionals():
@@ -128,12 +127,12 @@ def view_professionals():
             "pincode": professional.pincode,
             "number": professional.number,
             "status": professional.status,
-            "experince": professional.experince,
+            "experince": professional.experience,
             "service_id": professional.service_id
         })
     return jsonify(result)
 
-@app.route('/api/view_requests',methods=['POST'])
+@app.route('/api/view_requests')
 @auth_required('token')
 @roles_required('admin')
 def view_requests():
@@ -185,7 +184,7 @@ def Block_customer(id):
     return jsonify({"message": "User blocked successfully"}), 201
 
 
-@app.route('/api/Unblock_customer<int:id>', methods=['POST'])
+@app.route('/api/Unblock_customer/<int:id>', methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
 def Unblock_customer(id):
@@ -196,9 +195,9 @@ def Unblock_customer(id):
     db.session.commit()
     return jsonify({"message": "User unblocked successfully"}), 201
 
-@app.route('/api/Block_professional<int:id>', methods=['POST'])
+@app.route('/api/Block_professional/<int:id>', methods=['POST'])
 @auth_required('token')
-@roles_required('user')
+@roles_required('admin')
 def Block_professional(id):
     data = Professional.query.get(id)
     user=app.security.datastore.find_user(id=data.login_id)
@@ -207,9 +206,9 @@ def Block_professional(id):
     db.session.commit()
     return jsonify({"message": "User blocked successfully"}), 201
 
-@app.route('/api/Unblock_professional<int:id>', methods=['POST'])
+@app.route('/api/Unblock_professional/<int:id>', methods=['POST'])
 @auth_required('token')
-@roles_required('user')
+@roles_required('admin')
 def Unblock_professional(id):
     data = Professional.query.get(id)
     user=app.security.datastore.find_user(id=data.login_id)

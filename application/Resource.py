@@ -112,6 +112,10 @@ class service(Resource):
     @roles_accepted('admin')
     def post(self):
         args= parser.parse_args()
+        service= Service.query.filter_by(name=args.service_name).first()
+        print(service)
+        if service:
+            return {"message": "Service name already exists"},402
         service = Service(name=args.service_name, description=args.service_description,
                             price=args.service_price,category=args.service_category)
         db.session.add(service)
