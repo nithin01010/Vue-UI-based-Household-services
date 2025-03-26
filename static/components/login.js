@@ -52,10 +52,10 @@ export default{
               localStorage.setItem("username",data['name'])
               localStorage.setItem("role",data["role"])
               if (data["role"]=="customer"){
-                this.$router.push('/C_Dashboard');
+                this.$router.push('/C_dashboard');
               }
               else if (data["role"]=="professional"){
-                this.$router.push('/P_Dashboard');
+                this.$router.push('/P_dashboard');
               }
               else{this.$router.push('/Dashboard');}
             }

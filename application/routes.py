@@ -75,7 +75,7 @@ def P_register():
                 email=data.get("email"),            # Use .get() to avoid KeyError
                 username=data.get("username"),
                 password=generate_password_hash(data.get("password", "")),
-                roles=["customer"]
+                roles=["professional"]
             )
             db.session.commit()
         except IntegrityError:
@@ -305,8 +305,6 @@ def customer_search():
             this_service["description"]=service.description
             this_service["category"]=service.category
             service_json.append(this_service)
-    print(services)
-        
     return jsonify(service_json)
 
 #---------------------------------------------------------------PROF APIS---------------------------------------------------
@@ -342,7 +340,27 @@ def update_professional():
     db.session.commit()
     return jsonify("Profile updated successfully")
 
-
+@app.route("/api/prof_services")
+@auth_required('token')
+@roles_required('professional')
+def prof_services():
+    professional = Professional.query.filter_by(login_id=current_user.id).first()
+    services = Request.query.filter_by(service_id=professional.service_id)
+    service_json=[]
+    for service in services:
+            this_service={}
+            this_service["id"]=service.id
+            this_service["name"]=service.name
+            this_service["price"]=service.price
+            this_service["rating"]=service.rating
+            this_service["description"]=service.description
+            this_service["category"]=service.category
+            service_json.append(this_service)
+    if service_json :
+            return service_json
+    return {
+            "message": "No services found"
+        },404
 
 @app.route("/api/reject_request/<int:id>", methods=["POST"])
 @auth_required('token')

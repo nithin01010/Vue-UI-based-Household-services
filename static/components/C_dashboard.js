@@ -35,8 +35,8 @@ export default {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in serviceHistory" :key="item.id">
-                  <td>{{ item.id }}</td>
+                <tr v-for="(item,index) in serviceHistory" :key="item.id">
+                  <td>{{ index }}</td>
                   <td>{{ item.service_name }}</td>
                   <td>{{ item.professional_name }}</td>
                   <td>{{ item.phone }}</td>
@@ -77,7 +77,7 @@ export default {
             .then(data => {
               this.userData = data;
             }),
-        fetch('/get_requests',{
+        fetch('/api/get_requests',{
             method: 'GET',
             headers: {
               "Content-Type": "application/json",
@@ -88,11 +88,6 @@ export default {
           .then(data => {
               this.serviceHistory = data;
             });
-        },
-    methods: {
-      redirectToRemarks(requestId) {
-        this.$router.push('/remarks/' + requestId);
-      }
-    }
+        }
   };
   

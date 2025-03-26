@@ -11,6 +11,8 @@ import update_service from './components/update_service.js';
 import A_P_profile from './components/A_P_profile.js';
 import C_Dashboard from './components/C_dashboard.js';
 import C_booking from './components/C_booking.js';
+import C_Search from './components/C_search.js';
+import P_dashboard from './components/P_dashboard.js';
 Vue.use(VueRouter);
 
 // Define your routes (you can add meta properties if needed)
@@ -25,6 +27,9 @@ const routes = [
   {path: '/A_professionalprofile/:id' , component: A_P_profile},
   {path : '/C_dashboard', component: C_Dashboard},
   {path : '/C_booking/:cat', component: C_booking},
+  {path : '/C_search', component: C_Search},
+  { path: '/C_summary', component: () => import('./components/C_summary.js') },
+  { path: '/P_dashboard', component: P_dashboard}
 ];
 
 const router = new VueRouter({

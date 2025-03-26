@@ -36,13 +36,25 @@ class Requests(Resource):
             this_tran={}
             this_tran["id"]=request.id
             this_tran["customer_id"]=request.customer_id
-            this_tran["professional_id"]=request.professional_id
+            if request.professional:
+                this_tran["professional_name"]=request.professional.fullname
+            else:
+                this_tran["professional_name"]="Not assigned yet"
+            if request.professional:
+                this_tran["phone"]=request.professional.number
+            else:
+                this_tran["phone"]="Not assigned yet"
             this_tran["service_id"]=request.service_id
             this_tran["status"]=request.status
-            this_tran["date_request"]=request.date_request 
+            this_tran["date_request"]=request.date_request.strftime('%Y-%m-%d')
             this_tran["rating"]=request.rating
             this_tran["remark"]=request.remarks
-            this_tran["date_close"]=request.date_close
+            this_tran["service_name"]=request.service.name
+            this_tran["professional_id"]=request.professional_id
+            if request.date_close :
+                this_tran["date_close"]=request.date_close.strftime('%Y-%m-%d')
+            else:
+                this_tran["date_close"]="Not closed yet"
             request_json.append(this_tran)
         if request_json :
             return request_json
