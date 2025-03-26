@@ -55,6 +55,14 @@ class Requests(Resource):
                 this_tran["date_close"]=request.date_close.strftime('%Y-%m-%d')
             else:
                 this_tran["date_close"]="Not closed yet"
+            id=request.customer_id
+            customer=Customer.query.filter_by(login_id=id).first()
+            this_tran["customer"]={"fullname":customer.fullname,"address":customer.address, "pincode":customer.pincode,"number":customer.number}
+            professional= Professional.query.filter_by(login_id=request.professional_id).first()
+            if professional:
+                this_tran["professional"]={"fullname":professional.fullname}
+            else:
+                this_tran["professional"]={"fullname":"Not Assigned"}
             request_json.append(this_tran)
         if request_json :
             return request_json

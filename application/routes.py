@@ -111,6 +111,20 @@ def view_servie(id):
     service = Service.query.get(id)
     return jsonify({"name": service.name, "description": service.description, "price": service.price,"category": service.category}), 200
 
+@app.route("/api/Block_request", methods=["POST"])
+@auth_required('token')
+@roles_required('admin')  # Assuming only admin can block requests
+def Block_request():
+    data = request.get_json()
+    request = Request.query.get(data['id'])
+    
+    if request:
+        request.status = "blocked by admin"
+        db.session.commit()
+        return jsonify({"message": "Request blocked successfully"}), 200
+    else:
+        return jsonify({"message": "Request not found"}), 404
+
 @app.route('/api/view_customers')
 @auth_required('token')
 @roles_required('admin')
@@ -135,6 +149,26 @@ def view_customer(id):
     customer = Customer.query.get(id)
     return jsonify({"id": customer.id, "fullname": customer.fullname, "address": customer.address,
                    "pincode": customer.pincode, "number": customer.number, "status": customer.status}), 200
+
+@app.route('/api/view_request/<int:id>')
+@auth_required('token')
+@roles_required('admin')
+def view_request(id):
+    request = Request.query.get(id)
+    if request.date_close:
+        date=request.date_close.strftime('%Y-%m-%d')
+    else:
+        date=None
+    c=Customer.query.filter_by(login_id=request.customer_id).first()
+    p=Professional.query.filter_by(login_id=request.professional_id).first()
+    if p is None:
+        fullname="Not Assigned"
+    else:
+        fullname=p.fullname
+    s=Service.query.filter_by(id=request.service_id).first()
+    return jsonify({"id": request.id, "customer_name": c.fullname, "professional_name": fullname,
+                   "service_name": s.name, "status": request.status, "date_request": request.date_request.strftime('%Y-%m-%d')
+                   ,"date_close": date}), 200
 
 @app.route('/api/view_professionals')
 @auth_required('token')
@@ -164,24 +198,6 @@ def view_professional(id):
                    "pincode": professional.pincode, "number": professional.number, "status": professional.status,
                    "experience": professional.experience, "service_name": professional.service.name}), 200
 
-@app.route('/api/view_requests')
-@auth_required('token')
-@roles_required('admin')
-def view_requests():
-    requests = Request.query.all()
-    result = []
-    for request in requests:
-        result.append({
-            "id": request.id,
-            "customer_id": request.customer_id,
-            "professional_id": request.professional_id,
-            "service_id": request.service_id,
-            "date_time": request.date_time,
-            "status": request.status,
-            "remarks": request.remarks,
-            "rating": request.rating
-        })
-    return jsonify(result)
 
 @app.route('/api/Admin_search',methods=['POST'])
 @auth_required('token')
@@ -248,6 +264,7 @@ def Unblock_professional(id):
     data.status="Active"
     db.session.commit()
     return jsonify({"message": "User unblocked successfully"}), 201
+
 
 #--------------------------------------------------------------CUST APIS----------------------------------------------------------------------------
 
@@ -345,50 +362,66 @@ def update_professional():
 @roles_required('professional')
 def prof_services():
     professional = Professional.query.filter_by(login_id=current_user.id).first()
-    services = Request.query.filter_by(service_id=professional.service_id)
-    service_json=[]
-    for service in services:
-            this_service={}
-            this_service["id"]=service.id
-            this_service["name"]=service.name
-            this_service["price"]=service.price
-            this_service["rating"]=service.rating
-            this_service["description"]=service.description
-            this_service["category"]=service.category
-            service_json.append(this_service)
-    if service_json :
-            return service_json
-    return {
-            "message": "No services found"
-        },404
+    requests = Request.query.filter_by(service_id=professional.service_id)
+    request_json=[]
+    for request in requests:
+        if request.status=='Requested':
+            this_tran={}
+            this_tran["id"]=request.id
+            this_tran["customer_id"]=request.customer_id
+            if request.professional:
+                this_tran["professional_name"]=request.professional.fullname
+            else:
+                this_tran["professional_name"]="Not assigned yet"
+            if request.professional:
+                this_tran["phone"]=request.professional.number
+            else:
+                this_tran["phone"]="Not assigned yet"
+            this_tran["service_id"]=request.service_id
+            this_tran["status"]=request.status
+            this_tran["date_request"]=request.date_request.strftime('%Y-%m-%d')
+            this_tran["rating"]=request.rating
+            this_tran["remark"]=request.remarks
+            this_tran["service_name"]=request.service.name
+            this_tran["professional_id"]=request.professional_id
+            if request.date_close :
+                this_tran["date_close"]=request.date_close.strftime('%Y-%m-%d')
+            else:
+                this_tran["date_close"]="Not closed yet"
+            customer=Customer.query.get(request.customer_id)
+            this_tran["customer"]={"fullname":customer.fullname,"address":customer.address, "pincode":customer.pincode,"number":customer.number}
+            request_json.append(this_tran)
+    return jsonify(request_json)
 
-@app.route("/api/reject_request/<int:id>", methods=["POST"])
+@app.route("/api/reject_request", methods=["POST"])
 @auth_required('token')
 @roles_required('professional')
-def reject_request(id):
-    request = Request.query.get(id)
+def reject_request():
+    id=request.get_json()
+    request1 = Request.query.get(id)
     professional = Professional.query.filter_by(login_id=current_user.id).first()
     if professional is not None:
-        request.hidden_from_professionals.append(professional)
+        request1.hidden_from_professionals.append(professional)
         db.session.commit()
     
-    all_professionals = Professional.query.filter_by(service_id=request.service_id).all()
-    all_rejected = all(pro in request.hidden_from_professionals for pro in all_professionals)
+    all_professionals = Professional.query.filter_by(service_id=request1.service_id).all()
+    all_rejected = all(pro in request1.hidden_from_professionals for pro in all_professionals)
     
     if all_rejected:
-        request.status = "rejected"
+        request1.status = "rejected"
         db.session.commit()
     
     return {"message": "Request rejected successfully"}
 
 
-@app.route("/api/accept_request/<int:id>", methods=["POST"])
+@app.route("/api/accept_request", methods=["POST"])
 @auth_required('token')
 @roles_required('professional')
-def accept_request(self,id):
-    request = Request.query.get(id)
-    request.professional_id= current_user.id
-    request.status=""
+def accept_request():
+    id=request.get_json()
+    request1 = Request.query.get(id)
+    request1.professional_id= current_user.id
+    request1.status="Accepted"
     db.session.commit()
     return {"message": "Request Accepted successfully"}, 200
 

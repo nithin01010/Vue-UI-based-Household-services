@@ -72,10 +72,10 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(request, index) in requests" :key="request.id">
-                <td><a :href="'/check_Request/' + request.id">{{ index + 1 }}</a></td>
-                <td>{{ request.service?.name || 'Unknown' }}</td>
-                <td>{{ request.customer?.fullname || 'N/A' }}</td>
-                <td>{{ request.professional?.fullname || 'Not Assigned' }}</td>
+                <td><router-link  :to="'/request_view/'+request.id">{{ index + 1 }}</router-link></td>
+                <td>{{ request.service_name  }}</td>
+                <td>{{ request.customer.fullname}}</td>
+                <td>{{ request.professional.fullname  }}</td>
                 <td>{{ request.status === 'close it' ? 'Accepted' : request.status }}</td>
               </tr>
             </tbody>

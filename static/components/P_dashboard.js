@@ -8,9 +8,10 @@ export default {
                 </div>
                 <div class="card-body">
                     <table v-if="requests.length" class="table table-hover">
-                        <thead class="table-dark">
+                        <thead class="table-light">
                             <tr>
                                 <th>ID</th>
+                                <th>Service</th>
                                 <th>Customer Name</th>
                                 <th>Phone</th>
                                 <th>Location</th>
@@ -20,6 +21,7 @@ export default {
                         <tbody>
                             <tr v-for="(request, index) in requests" :key="index">
                                 <td>{{ request.id }}</td>
+                                <td>{{ request.service_name }}</td>
                                 <td>{{ request.customer.fullname }}</td>
                                 <td>{{ request.customer.number }}</td>
                                 <td>{{ request.customer.address }} ({{ request.customer.pincode }})</td>
@@ -40,7 +42,7 @@ export default {
                 </div>
                 <div class="card-body">
                     <table v-if="closed.length" class="table table-hover">
-                        <thead class="table-dark">
+                        <thead class="table-light">
                             <tr>
                                 <th>ID</th>
                                 <th>Customer Name</th>
@@ -111,15 +113,37 @@ export default {
                 })
         },
         rejectRequest(id) {
-            console.log(`Reject request with ID: ${id}`);
-            this.fetchRequests();
-            this.CurrentRequests();
+            fetch('/api/reject_request',
+                { 
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authentication-Token": localStorage.getItem("auth_token")
+                    },
+                    body: JSON.stringify({id})
+                }).then(response => response.json())
+                .then(data => {
+                    alert(data)
+                    this.fetchRequests();
+                    this.CurrentRequests();
+                })
+                
         },
         acceptRequest(id) {
-            fetch('/api/')
-            console.log(`Accept request with ID: ${id}`);
+            fetch('/api/accept_request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authentication-Token': localStorage.getItem('auth_token')
+                },
+                body: JSON.stringify({id})
+        }).then(response => response.json)
+        .then(data => {
+            alert(data)
             this.fetchRequests();
             this.CurrentRequests();
+        })
+            
         }
     }
 };
