@@ -28,19 +28,38 @@ export default {
                                   <label class="form-label">Request Date:</label>
                                   <input type="text" class="form-control" :value="service.date_request" readonly>
                               </div>
-                              <div class="mb-3" v-if="service.date_close">
-                                  <label class="form-label">Closed Date:</label>
-                                  <input type="text" class="form-control" :value="service.date_close" readonly>
-                              </div>
+                            <div v-if="role==='admin'">
                               <div class="mb-3">
                                   <label class="form-label">Rating:</label>
-                                  <input type="number" class="form-control" :value="service.rating" readonly>
+                                  <input type="number" class="form-control" :value="service.rating || 'Request not over'" readonly>
                               </div>
                               <div class="mb-3">
                                   <label class="form-label">Remarks:</label>
-                                  <input type="text" class="form-control" :value="service.remarks" readonly>
+                                  <input type="text" class="form-control" :value="service.remarks || 'Request not over' " readonly>
                               </div>
-                              <button @click="blockRequest" class="btn btn-danger mt-3">Block Request</button>
+                            </div>
+                            <div v-else>
+                              <div class="mb-3">
+                                <label for="rating" class="form-label">Service Rating:</label>
+                                <select class="form-select" id="rating" name="rating" v-model="rating" required>
+                                    <option value="1">♦</option>
+                                    <option value="2">♦♦</option>
+                                    <option value="3">♦♦♦</option>
+                                    <option value="4">♦♦♦♦</option>
+                                    <option value="5">♦♦♦♦♦</option>
+                                </select>
+                            </div>
+                              <div class="mb-3">
+                                  <label class="form-label">Remarks:</label>
+                                  <input type="text" class="form-control" v-model="remarks " required>
+                              </div>
+                            </div>
+                              <div v-if="role==='admin'">
+                                <button @click="blockRequest" class="btn btn-danger mt-3">Block Request</button>
+                              </div>
+                              <div v-else>
+                                <div @click="remark" class="btn btn-danger" >Submit Remarks</div>
+                              </div>
                           </div>
   
                           <div v-else>
@@ -54,13 +73,17 @@ export default {
     `,
     data() {
       return {
-        service: null,
+        service: [],
         serviceId: null,
+        remarks:"",
+        rating:3,
+        role:""
       };
     },
     mounted() {
       this.serviceId = this.$route.params.id;
       this.fetchServiceDetails();
+      this.role = localStorage.getItem('role')
     },
     methods: {
       fetchServiceDetails() {
@@ -84,15 +107,15 @@ export default {
       },
       blockRequest() {
         fetch('/api/Block_request', {
-          method: 'PUT',
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Authentication-Token': localStorage.getItem('auth_token'),
           },
           body: JSON.stringify({ id: this.serviceId }),
         })
-          .then(response => {
-            if (!response.ok) throw new Error("Failed to block the request");
+          .then(response => response.json())
+          .then(data=>{
             alert("Request blocked successfully.");
             this.$router.push("/dashboard");
           })
@@ -100,6 +123,26 @@ export default {
             console.error("Error blocking request:", error);
           });
       },
+      remark(){
+        fetch('/api/customer_review'
+          , {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authentication-Token': localStorage.getItem('auth_token'),
+            },
+            body: JSON.stringify({
+              id: this.serviceId,
+              remarks: this.remarks,
+              rating : this.rating
+            })
+          })
+         .then(response => response.json())
+         .then(data=>{
+            alert("Request updated successfully.");
+            this.$router.push("/C_dashboard");
+          })
+      }
     },
   };
   

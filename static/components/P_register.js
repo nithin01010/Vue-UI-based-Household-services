@@ -103,7 +103,7 @@ export default {
           })
           
         .then(response => response.json())
-      .then(data => {
+        .then(data => {
           alert("Account Created Successfully");
           this.$router.push('/login');
       })

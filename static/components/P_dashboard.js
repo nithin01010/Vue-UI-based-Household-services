@@ -123,11 +123,9 @@ export default {
                     body: JSON.stringify({id})
                 }).then(response => response.json())
                 .then(data => {
-                    alert(data)
                     this.fetchRequests();
                     this.CurrentRequests();
                 })
-                
         },
         acceptRequest(id) {
             fetch('/api/accept_request', {
@@ -139,7 +137,6 @@ export default {
                 body: JSON.stringify({id})
         }).then(response => response.json)
         .then(data => {
-            alert(data)
             this.fetchRequests();
             this.CurrentRequests();
         })

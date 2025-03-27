@@ -27,6 +27,16 @@ def login():
             role = UsersRoles.query.filter_by(user_id=user.id).first()  
             if role:
                 role_name = Role.query.get(role.role_id)
+                if role_name=="customer" :
+                    c=Customer.query.filter_by(login_id=user.id).first()
+                    if c.status =='Blocked':
+                        return jsonify({"message":"Account is Blocked by admin"})
+                if role_name=="professional":
+                    p=Professional.query.filter_by(login_id=user.id).first()
+                    if p.status =='Blocked':
+                        return jsonify({"message":"Account is Blocked by admin"})
+                    if p.status=='Under Verification':
+                        return jsonify({"message":"Your account is under verification"})
                 return jsonify({
                     "id": user.id,
                     "name": user.username,
@@ -72,7 +82,7 @@ def P_register():
     if not app.security.datastore.find_user(email=data["email"]):
         try:
             app.security.datastore.create_user(
-                email=data.get("email"),            # Use .get() to avoid KeyError
+                email=data.get("email"),            
                 username=data.get("username"),
                 password=generate_password_hash(data.get("password", "")),
                 roles=["professional"]
@@ -113,13 +123,13 @@ def view_servie(id):
 
 @app.route("/api/Block_request", methods=["POST"])
 @auth_required('token')
-@roles_required('admin')  # Assuming only admin can block requests
+@roles_required('admin')  
 def Block_request():
     data = request.get_json()
-    request = Request.query.get(data['id'])
+    request1 = Request.query.get(data['id'])
     
-    if request:
-        request.status = "blocked by admin"
+    if request1:
+        request1.status = "blocked by admin"
         db.session.commit()
         return jsonify({"message": "Request blocked successfully"}), 200
     else:
@@ -152,7 +162,7 @@ def view_customer(id):
 
 @app.route('/api/view_request/<int:id>')
 @auth_required('token')
-@roles_required('admin')
+@roles_accepted('admin','customer')
 def view_request(id):
     request = Request.query.get(id)
     if request.date_close:
@@ -198,7 +208,6 @@ def view_professional(id):
                    "pincode": professional.pincode, "number": professional.number, "status": professional.status,
                    "experience": professional.experience, "service_name": professional.service.name}), 200
 
-
 @app.route('/api/Admin_search',methods=['POST'])
 @auth_required('token')
 @roles_required('admin')
@@ -208,16 +217,59 @@ def Admin_search():
     query = data['query'].lower()
     if category == 'service':
         if query=='closed':
-            results = Request.query.filter(Request.status=='closed').all()
+            requests = Request.query.filter(Request.status=='completed').all()
         elif query=='open':
-            results = Request.query.filter(Request.status=='close it' or Request.status=='requested').all()
+            requests = Request.query.filter(Request.status=='close it' or Request.status=='Requested').all()
         else:
             return jsonify({"message": "Please enter only Closed or Open"}), 400
+        request_json=[]
+        for request1 in requests:
+                this_tran={}
+                this_tran["id"]=request1.id
+                this_tran["status"]=request1.status
+                service=Service.query.get(request1.service_id)
+                this_tran["service_name"]=service.name
+                this_tran["service_price"]=service.price
+                id=request1.customer_id
+                customer=Customer.query.filter_by(login_id=id).first()
+                this_tran["customer_name"]=customer.fullname
+                professional= Professional.query.filter_by(login_id=request1.professional_id).first()
+                if professional:
+                    this_tran["professional_name"]=professional.fullname
+                else:
+                    this_tran["professional_name"]="Not Assigned"
+                request_json.append(this_tran)
+        return jsonify(request_json),200
     elif category == 'customers':
-        results=Customer.query.filter(Customer.fullname.ilike(f'%{query}%')).all()
+        customers=Customer.query.filter(Customer.fullname.ilike(f'%{query}%')).all()
+        result = []
+        for customer in customers:
+            result.append({
+                "id": customer.id,
+                "fullname": customer.fullname,
+                "address": customer.address,
+                "pincode": customer.pincode,
+                "number": customer.number,
+                "status": customer.status
+            })
+        return jsonify(result)
     elif category == 'professionals':
-        results = Professional.query.filter(Professional.fullname.ilike(f'%{query}%')).all()
-    return jsonify(results)
+        professionals = Professional.query.filter(Professional.fullname.ilike(f'%{query}%')).all()
+        result = []
+        for professional in professionals:
+            service=Service.query.get(professional.service_id)
+            result.append({
+            "id": professional.id,
+            "fullname": professional.fullname,
+            "address": professional.address,
+            "pincode": professional.pincode,
+            "number": professional.number,
+            "status": professional.status,
+            "experience": professional.experience,
+            "service_id": professional.service_id,
+            "service_name": service.name
+        })
+    return jsonify(result)
 
 
 @app.route('/api/Block_customer/<int:id>', methods=['POST'])
@@ -284,17 +336,21 @@ def cutomer_profile():
         return jsonify("Profile updated successfully")
     return jsonify(customer.to_dict())
         
-@app.route("/api/customer_review/<int:id>", methods=["POST"])
+@app.route("/api/customer_review", methods=["POST"])
 @auth_required('token')
 @roles_required('customer')
-def customer_review(self,id):
+def customer_review():
         data= request.get_json()
-        request = Request.query.get(id)
-        request.remarks = data["request_remarks"]
-        request.rating = data["request_rating"]
-        request.status = "completed"
-        service = Service.query.get(request.service_id)
-        service.rating = (service.rating +  data["request_rating"])/2
+        print(data)
+        request1 = Request.query.get(data["id"])
+        request1.remarks = data["remarks"]
+        request1.rating = data["rating"]
+        request1.status = "completed"
+        service = Service.query.get(request1.service_id)
+        if service.rating:
+            service.rating = (service.rating +  float(data["rating"]))/2
+        else:
+            service.rating = data["rating"]
         db.session.commit()
         return {"message" : " Remarks added successfully"}
 
@@ -361,37 +417,44 @@ def update_professional():
 @auth_required('token')
 @roles_required('professional')
 def prof_services():
-    professional = Professional.query.filter_by(login_id=current_user.id).first()
-    requests = Request.query.filter_by(service_id=professional.service_id)
-    request_json=[]
-    for request in requests:
-        if request.status=='Requested':
-            this_tran={}
-            this_tran["id"]=request.id
-            this_tran["customer_id"]=request.customer_id
-            if request.professional:
-                this_tran["professional_name"]=request.professional.fullname
-            else:
-                this_tran["professional_name"]="Not assigned yet"
-            if request.professional:
-                this_tran["phone"]=request.professional.number
-            else:
-                this_tran["phone"]="Not assigned yet"
-            this_tran["service_id"]=request.service_id
-            this_tran["status"]=request.status
-            this_tran["date_request"]=request.date_request.strftime('%Y-%m-%d')
-            this_tran["rating"]=request.rating
-            this_tran["remark"]=request.remarks
-            this_tran["service_name"]=request.service.name
-            this_tran["professional_id"]=request.professional_id
-            if request.date_close :
-                this_tran["date_close"]=request.date_close.strftime('%Y-%m-%d')
-            else:
-                this_tran["date_close"]="Not closed yet"
-            customer=Customer.query.get(request.customer_id)
-            this_tran["customer"]={"fullname":customer.fullname,"address":customer.address, "pincode":customer.pincode,"number":customer.number}
-            request_json.append(this_tran)
-    return jsonify(request_json)
+        professional = Professional.query.filter_by(login_id=current_user.id).first()
+        requests = Request.query.filter(
+            Request.service_id == professional.service_id,
+            ~Request.hidden_from_professionals.contains(professional)
+        ).all()
+        
+        request_json = []
+        for request in requests:
+            if request.status == 'Requested':
+                this_tran = {
+                    "id": request.id,
+                    "customer_id": request.customer_id,
+                    "professional_name": request.professional.fullname if request.professional else "Not assigned yet",
+                    "phone": request.professional.number if request.professional else "Not assigned yet",
+                    "service_id": request.service_id,
+                    "status": request.status,
+                    "date_request": request.date_request.strftime('%Y-%m-%d'),
+                    "rating": request.rating,
+                    "remark": request.remarks,
+                    "service_name": request.service.name if request.service else "Unknown",
+                    "professional_id": request.professional_id,
+                    "date_close": request.date_close.strftime('%Y-%m-%d') if request.date_close else "Not closed yet"
+                }
+
+                customer = Customer.query.filter_by(login_id=request.customer_id).first()
+                if customer:
+                    this_tran["customer"] = {
+                        "fullname": customer.fullname,
+                        "address": customer.address,
+                        "pincode": customer.pincode,
+                        "number": customer.number
+                    }
+                else:
+                    this_tran["customer"] = {"fullname": "Unknown", "address": "", "pincode": "", "number": ""}
+
+                request_json.append(this_tran)
+
+        return jsonify(request_json)
 
 @app.route("/api/reject_request", methods=["POST"])
 @auth_required('token')
@@ -441,24 +504,6 @@ def professional_search():
             results = Request.query.join(Customer).filter(Request.service_id == service_id,Request.status == 'requested',
                     Customer.pincode.ilike(f'%{query}%'),~Request.id.in_(hidden_request_ids) ).all()
     return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 @app.route('/api/Accept_request',methods=['POST'])

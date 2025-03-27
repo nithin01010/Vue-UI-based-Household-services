@@ -60,7 +60,7 @@ class Requests(Resource):
             this_tran["customer"]={"fullname":customer.fullname,"address":customer.address, "pincode":customer.pincode,"number":customer.number}
             professional= Professional.query.filter_by(login_id=request.professional_id).first()
             if professional:
-                this_tran["professional"]={"fullname":professional.fullname}
+                this_tran["professional"]={"fullname":professional.fullname,"number": professional.number}
             else:
                 this_tran["professional"]={"fullname":"Not Assigned"}
             request_json.append(this_tran)

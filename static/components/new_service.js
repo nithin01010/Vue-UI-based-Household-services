@@ -71,9 +71,7 @@ export default {
         alert(data.message);
         this.$router.push('/Dashboard');
       })
-      .catch(err => {
-        this.error = err.message;
-      });
     }
   }
-};
+}
+
