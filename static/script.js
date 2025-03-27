@@ -15,6 +15,7 @@ import C_Search from './components/C_search.js';
 import P_dashboard from './components/P_dashboard.js';
 import request_view from './components/request_view.js';
 import A_search from './components/A_search.js';
+import C_profile from './components/C_profile.js';
 Vue.use(VueRouter);
 
 // Define your routes (you can add meta properties if needed)
@@ -33,7 +34,8 @@ const routes = [
   {path : '/C_search', component: C_Search},
   { path: '/C_summary', component: () => import('./components/C_summary.js') },
   { path: '/P_dashboard', component: P_dashboard},
-  {path: '/request_view/:id', component: request_view}
+  {path: '/request_view/:id', component: request_view},
+  {path: '/C_profile/:id', component: C_profile}
 ];
 
 const router = new VueRouter({

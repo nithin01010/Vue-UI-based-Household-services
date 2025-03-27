@@ -4,7 +4,7 @@ export default {
       <div class="col-md-6">
         <div class="card shadow">
           <div class="card-body">
-            <h2 class="card-title text-primary text-center mb-4">Update Professional</h2>
+            <h2 class="card-title text-primary text-center mb-4">Professional</h2>
             <form>
               <div class="mb-3">
                 <label for="fullname" class="form-label fw-bold">Full Name:</label>
@@ -23,7 +23,7 @@ export default {
 
               <div class="mb-3">
                 <label for="Service" class="form-label fw-bold">Service Name:</label>
-                <input type="text" class="form-control" id="Service" v-model="service_name">
+                <input type="text" class="form-control" id="Service" v-model="service_name" readonly>
               </div>
 
               <div class="mb-3">
@@ -35,23 +35,25 @@ export default {
                 <label for="experience" class="form-label fw-bold">Experience (Years):</label>
                 <input type="number" class="form-control" id="experience" v-model="experience">
               </div>
-
+            <div v-if="role==='admin'">
               <div v-if="error" class="alert alert-danger text-center">{{ error }}</div>
-
+              <div 
               <div class="text-center">
                 <button 
                   v-if="status === 'Active'" 
-                  @click.prevent="blockProfessional" 
-                  class="btn btn-danger mx-2">
+                  @click="blockProfessional" class="btn btn-danger mx-2">
                   Block
                 </button>
                 <button 
-                  v-if="status === 'Blocked'" 
-                  @click.prevent="unblockProfessional" 
+                  v-if="status === 'Blocked'" @click="unblockProfessional" 
                   class="btn btn-success">
                   Unblock
                 </button>
               </div>
+            </div>
+            <div v-else>
+              <div @click="update" class="btn btn-primary">Update</div>
+            </div>
             </form>
           </div>
         </div>
@@ -67,13 +69,16 @@ export default {
       pincode: '',
       experience: '',
       service_name:'',
+      service_id:'',
       status: '',
-      error: ''
+      error: '',
+      role : '',
     };
   },
   mounted() {
     this.professional_id = this.$route.params.id;
     this.fetchProfessionalDetails();
+    this.role = localStorage.getItem('role')
   },
   methods: {
     fetchProfessionalDetails() {
@@ -93,6 +98,7 @@ export default {
           this.experience = data.experience;
           this.status = data.status;
           this.service_name=data.service_name;
+          this.service_id=data.service_id;
         })
         .catch(error => {
           this.error = "Error fetching professional details: " + error.message;
@@ -128,9 +134,28 @@ export default {
           alert("Professional unblocked successfully!");
           this.$router.push('/Dashboard')
         })
-        .catch(err => {
-          this.error = err.message;
-        });
+    },
+    update() {
+      fetch(`/api/update_professional`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+          "Authentication-Token": localStorage.getItem("auth_token")
+        },
+        body: JSON.stringify({
+          fullname: this.fullname,
+          number: this.phone,
+          address: this.address,
+          pincode: this.pincode,
+          experience: this.experience,
+          service_id: this.service_id
+        })
+      })
+       .then(response => response.json())
+       .then(data => {
+          alert(data.message);
+          this.$router.push('/P_dashboard');
+        })
     }
   }
 };

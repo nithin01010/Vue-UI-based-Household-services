@@ -37,8 +37,8 @@ export default {
                         </tr>
                     </thead>
                     <tbody v-if="searchCategory === 'service'">
-                        <tr v-for="item in results" :key="item.id">
-                            <td><router-link :to="'/check_Request/' + item.id">{{ item.id }}</router-link></td>
+                        <tr v-for="(item,index) in results" :key="item.id">
+                            <td><router-link  :to="'/request_view/'+item.id">{{ index + 1 }}</router-link></td>
                             <td>{{ item.service_name }}</td>
                             <td>{{ item.customer_fullname }}</td>
                             <td>{{ item.professional_fullname || "Not Assigned" }}</td>
@@ -83,8 +83,8 @@ export default {
                         </tr>
                     </thead>
                     <tbody v-if="searchCategory === 'professionals'">
-                        <tr v-for="item in results" :key="item.id">
-                            <td><router-link :to="'/check_professional/' + item.id">{{ item.id }}</router-link></td>
+                        <tr v-for="(item,index) in results" :key="item.id">
+                            <td><router-link :to="'/A_professionalprofile/'+item.id " >{{index+1}}</router-link></td>
                             <td>{{ item.fullname }}</td>
                             <td>{{ item.service_name || "N/A" }}</td>
                             <td>{{ item.experience }}</td>

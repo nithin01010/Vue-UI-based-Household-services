@@ -31,7 +31,7 @@ export default {
                             <div v-if="role==='admin'">
                               <div class="mb-3">
                                   <label class="form-label">Rating:</label>
-                                  <input type="number" class="form-control" :value="service.rating || 'Request not over'" readonly>
+                                  <input type="number" class="form-control" :value="service.rating || 0" readonly>
                               </div>
                               <div class="mb-3">
                                   <label class="form-label">Remarks:</label>
@@ -54,10 +54,10 @@ export default {
                                   <input type="text" class="form-control" v-model="remarks " required>
                               </div>
                             </div>
-                              <div v-if="role==='admin'">
+                              <div v-if="role==='admin' && service.status!='completed'">
                                 <button @click="blockRequest" class="btn btn-danger mt-3">Block Request</button>
                               </div>
-                              <div v-else>
+                              <div v-if="role==='customer'">
                                 <div @click="remark" class="btn btn-danger" >Submit Remarks</div>
                               </div>
                           </div>

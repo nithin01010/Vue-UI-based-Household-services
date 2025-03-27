@@ -40,7 +40,7 @@ export default {
             </thead>
             <tbody>
               <tr v-for="(professional, index) in professionals" :key="professional.id">
-                <td><router-link :to="'/A_professionalprofile/'+professional.id " >{{index+1}}</router-link>
+                <td><router-link :to="'/A_professionalprofile/'+professional.login_id " >{{index+1}}</router-link>
                 </td>
                 <td>{{ professional.fullname }}</td>
                 <td>{{ professional.experience }}</td>

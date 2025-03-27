@@ -9,7 +9,7 @@ from .database import db
 def home():
     return render_template("index.html")
 
-@app.route("/api/home", methods=["GET"])
+@app.route("/api/home")
 @auth_required('token')
 @roles_accepted('customer','admin','professional')
 def home12():
@@ -154,7 +154,7 @@ def view_customers():
 
 @app.route('/api/view_customer/<int:id>')
 @auth_required('token')
-@roles_required('admin')
+@roles_required('admin','customer')
 def view_customer(id):
     customer = Customer.query.get(id)
     return jsonify({"id": customer.id, "fullname": customer.fullname, "address": customer.address,
@@ -178,7 +178,7 @@ def view_request(id):
     s=Service.query.filter_by(id=request.service_id).first()
     return jsonify({"id": request.id, "customer_name": c.fullname, "professional_name": fullname,
                    "service_name": s.name, "status": request.status, "date_request": request.date_request.strftime('%Y-%m-%d')
-                   ,"date_close": date}), 200
+                   ,"date_close": date,"remarks": request.remarks,"rating": request.rating}), 200
 
 @app.route('/api/view_professionals')
 @auth_required('token')
@@ -190,6 +190,7 @@ def view_professionals():
         result.append({
             "id": professional.id,
             "fullname": professional.fullname,
+            "login_id": professional.login_id,
             "address": professional.address,
             "pincode": professional.pincode,
             "number": professional.number,
@@ -200,13 +201,12 @@ def view_professionals():
     return jsonify(result)
 
 @app.route('/api/view_professional/<int:id>')
-@auth_required('token')
-@roles_required('admin')
 def view_professional(id):
-    professional = Professional.query.get(id)
+    professional = Professional.query.filter_by(login_id=id).first()
+    service = Service.query.get(professional.service_id)
     return jsonify({"id": professional.id, "fullname": professional.fullname, "address": professional.address,
                    "pincode": professional.pincode, "number": professional.number, "status": professional.status,
-                   "experience": professional.experience, "service_name": professional.service.name}), 200
+                   "experience": professional.experience, "service_name": service.name,"service_id":professional.service_id}), 200
 
 @app.route('/api/Admin_search',methods=['POST'])
 @auth_required('token')
@@ -276,7 +276,7 @@ def Admin_search():
 @auth_required('token')
 @roles_required("admin")
 def Block_customer(id):
-    customer = Customer.query.get(id)
+    customer = Customer.query.filter_by(login_id=id).first()
     user=app.security.datastore.find_user(id=customer.login_id)
     user.active=False
     customer.status="Blocked"
@@ -288,7 +288,7 @@ def Block_customer(id):
 @auth_required('token')
 @roles_required('admin')
 def Unblock_customer(id):
-    customer = Customer.query.get(id)
+    customer = Customer.query.filter_by(login_id=id).first()
     user=app.security.datastore.find_user(id=customer.login_id)
     user.active=True
     customer.status="Active"
@@ -299,7 +299,7 @@ def Unblock_customer(id):
 @auth_required('token')
 @roles_required('admin')
 def Block_professional(id):
-    data = Professional.query.get(id)
+    data = Professional.query.filter_by(login_id=id).first()
     user=app.security.datastore.find_user(id=data.login_id)
     user.active=False
     data.status="Blocked"
@@ -310,7 +310,7 @@ def Block_professional(id):
 @auth_required('token')
 @roles_required('admin')
 def Unblock_professional(id):
-    data = Professional.query.get(id)
+    data = Professional.query.filter_by(login_id=id).first()
     user=app.security.datastore.find_user(id=data.login_id)
     user.active=True
     data.status="Active"
@@ -320,21 +320,19 @@ def Unblock_professional(id):
 
 #--------------------------------------------------------------CUST APIS----------------------------------------------------------------------------
 
-@app.route("/api/cutomer_profile",methods=['GET','POST'])
+@app.route("/api/cutomer_profile",methods=['PUT'])
 @auth_required('token')
 @roles_required('customer')
 def cutomer_profile():
     customer= Customer.query.get(current_user.id)
-    if request.method=='POST':
-        data= request.get_json()
-        customer.fullname = data['fullname']
-        customer.address = data['address']
-        customer.phone = data['phone']
-        customer.pincode = data['pincode']
-        customer.address = data['address']
-        db.session.commit()
-        return jsonify("Profile updated successfully")
-    return jsonify(customer.to_dict())
+    data= request.get_json()
+    customer.fullname = data['fullname']
+    customer.address = data['address']
+    customer.phone = data['phone']
+    customer.pincode = data['pincode']
+    customer.address = data['address']
+    db.session.commit()
+    return jsonify({"message": "Profile updated"})
         
 @app.route("/api/customer_review", methods=["POST"])
 @auth_required('token')
@@ -382,34 +380,18 @@ def customer_search():
 
 #---------------------------------------------------------------PROF APIS---------------------------------------------------
 
-@app.route("/api/professional_profile", methods=["POST","GET"])
-@auth_required('token')
-@roles_required('professional') 
-def professional_profile():
-    professional = Professional.query.get(current_user.id)
-    if request.method=='POST':
-        data= request.get_json()
-        professional.fullname = data['fullname']
-        professional.address = data['address']
-        professional.phone = data['phone'] 
-        professional.pincode = data['pincode']
-        professional.experience = data['experience']
-        db.session.commit()
-        return jsonify("Profile updated successfully")
-    return jsonify(professional.to_dict())
-
 @app.route("/api/update_professional", methods=["POST"])
 @auth_required('token')
 @roles_required('professional')
 def update_professional():
-    professional = Professional.query.filter_by(login_id=current_user.id)
+    professional = Professional.query.filter_by(login_id=current_user.id).first()
     data = request.get_json()
-    professional.fullname = data['name']
+    professional.fullname = data['fullname']
     professional.address = data['address']
-    professional.phone = data['phone']
+    professional.phone = data['number']
     professional.pincode = data['pincode']
-    professional.service_id = data['service_id']
     professional.experience = data['experience']
+    current_user.username=data['fullname']
     db.session.commit()
     return jsonify("Profile updated successfully")
 
