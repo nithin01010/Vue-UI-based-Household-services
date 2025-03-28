@@ -28,17 +28,17 @@ export default {
                 </div>
   
                 <div v-if="error" class="alert alert-danger text-center">{{ error }}</div>
-                <div v-if="role==='admin'>
+                <div v-if="role==='admin'">
                     <div class="text-center">
                     <button 
                         v-if="status === 'Active'" 
-                        @click.prevent="blockcustomer" 
+                        @click="blockcustomer" 
                         class="btn btn-danger mx-2">
                         Block
                     </button>
                     <button 
                         v-if="status === 'Blocked'" 
-                        @click.prevent="unblockcustomer" 
+                        @click="unblockcustomer" 
                         class="btn btn-success">
                         Unblock
                     </button>
@@ -72,7 +72,7 @@ export default {
     },
     methods: {
       fetchProfessionalDetails() {
-        fetch(`/api/view_customer/${this.professional_id}`, {
+        fetch(`/api/view_customer/${this.customer_id}`, {
           method: 'GET',
           headers: {
             "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export default {
           });
       },
       blockcustomer() {
-        fetch(`/api/Block_customer/${this.professional_id}`, {
+        fetch(`/api/Block_customer/${this.customer_id}`, {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",
@@ -106,7 +106,7 @@ export default {
           })
       },
       unblockcustomer() {
-        fetch(`/api/Unblock_customer/${this.professional_id}`, {
+        fetch(`/api/Unblock_customer/${this.customer_id}`, {
           method: 'POST',
           headers: {
             "Content-Type": "application/json",

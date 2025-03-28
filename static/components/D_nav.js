@@ -35,7 +35,7 @@ export default {
       userData: {},
       dashboard: '',
       search: '',
-      summary: '',
+      summary: '/Summary',
       profile:''
     };
   },
@@ -52,16 +52,13 @@ export default {
     if (role === 'customer') {
       this.dashboard = '/C_dashboard';
       this.search = '/C_search';
-      this.summary = '/C_summary';
       this.profile = '/C_profile/'+id;
     } else if (role === 'admin') {
       this.dashboard = '/Dashboard';
       this.search = '/Search';
-      this.summary = '/Summary';
     } else {
       this.dashboard = '/P_dashboard';
       this.search = '/P_search';
-      this.summary = '/P_summary';
       this.profile = '/A_professionalprofile/'+id;
     }
   },

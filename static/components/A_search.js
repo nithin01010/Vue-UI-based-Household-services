@@ -60,7 +60,7 @@ export default {
                     </thead>
                     <tbody v-if="searchCategory === 'customers'">
                         <tr v-for="item in results" :key="item.id">
-                            <td><router-link :to="'/check_Customer/' + item.id">{{ item.id }}</router-link></td>
+                            <td><router-link :to="'/C_profile/' + item.login_id">{{ item.id }}</router-link></td>
                             <td>{{ item.fullname }}</td>
                             <td>{{ item.address }}</td>
                             <td>{{ item.pincode }}</td>

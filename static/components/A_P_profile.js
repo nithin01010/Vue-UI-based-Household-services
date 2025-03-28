@@ -153,7 +153,7 @@ export default {
       })
        .then(response => response.json())
        .then(data => {
-          alert(data.message);
+          alert("Update Successfull");
           this.$router.push('/P_dashboard');
         })
     }

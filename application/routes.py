@@ -5,6 +5,10 @@ from flask_security import hash_password,auth_required,roles_required,current_us
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
 from .database import db
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import os
 @app.route('/')
 def home():
     return render_template("index.html")
@@ -139,7 +143,7 @@ def Block_request():
 @auth_required('token')
 @roles_required('admin')
 def view_customers():
-    customers = Customer.query.all()
+    customers = Customer.query.filter_by(login_id=id).all()
     result = []
     for customer in customers:
         result.append({
@@ -153,10 +157,8 @@ def view_customers():
     return jsonify(result)
 
 @app.route('/api/view_customer/<int:id>')
-@auth_required('token')
-@roles_required('admin','customer')
 def view_customer(id):
-    customer = Customer.query.get(id)
+    customer = Customer.query.filter_by(login_id=id).first()
     return jsonify({"id": customer.id, "fullname": customer.fullname, "address": customer.address,
                    "pincode": customer.pincode, "number": customer.number, "status": customer.status}), 200
 
@@ -250,7 +252,8 @@ def Admin_search():
                 "address": customer.address,
                 "pincode": customer.pincode,
                 "number": customer.number,
-                "status": customer.status
+                "status": customer.status,
+                "login_id": customer.login_id
             })
         return jsonify(result)
     elif category == 'professionals':
@@ -324,11 +327,11 @@ def Unblock_professional(id):
 @auth_required('token')
 @roles_required('customer')
 def cutomer_profile():
-    customer= Customer.query.get(current_user.id)
+    customer= Customer.query.filter_by(login_id=current_user.id).first()
     data= request.get_json()
     customer.fullname = data['fullname']
     customer.address = data['address']
-    customer.phone = data['phone']
+    customer.phone = data['number']
     customer.pincode = data['pincode']
     customer.address = data['address']
     db.session.commit()
@@ -475,6 +478,7 @@ def accept_request():
 @roles_required('professional')
 def professional_search():
     service_id = current_user.service_id
+    print(service_id)
     hidden_request_ids = db.session.query(hidden_requests.c.request_id).filter(hidden_requests.c.professional_id == current_user.id)
     if request.method == 'POST':
         category = request.form.get('category')
@@ -500,10 +504,84 @@ def Accept_request():
 
 
 
+#-------------------------------------Summary--------------------------------------
+
+IMAGE_DIR = "static/images"
+
+# Ensure the image directory exists
+os.makedirs(IMAGE_DIR, exist_ok=True)
+
+@app.route('/api/A_summary')
+@auth_required('token')
+@roles_required('admin')
+def admin_summary():
+    # Service Requests
+    request_count = Request.query.count()
+    closed = Request.query.filter_by(status="completed").count()
+    ongoing = Request.query.filter_by(status="Accepted").count()
+
+    service_labels = ["Requested", "Closed", "Ongoing"]
+    service_counts = [request_count, closed, ongoing]
+
+    service_img = os.path.join(IMAGE_DIR, "Request.jpg")
+    plt.bar(service_labels, service_counts, color="blue", width=0.3)
+    plt.xlabel("Service Status")
+    plt.ylabel("Number of Services")
+    plt.title("Service Requests")
+    plt.savefig(service_img, dpi=100)
+    plt.clf()
+
+    rating_counts = [Request.query.filter_by(rating=i).count() for i in range(1, 6)]
+    rating_img = os.path.join(IMAGE_DIR, "Rating.jpg")
+
+    plt.bar(["1", "2", "3", "4", "5"], rating_counts, color="blue", width=0.3)
+    plt.xlabel("Service Rating")
+    plt.ylabel("Number of Ratings")
+    plt.title("Service Ratings")
+    plt.savefig(rating_img, dpi=100)
+    plt.clf()
+
+    return jsonify({"service_img": service_img, "rating_img": rating_img})
 
 
+@app.route('/api/C_summary', methods=['GET'])
+@auth_required('token')
+@roles_required('customer')
+def customer_summary():
+    C_id = current_user.id
+    request_count = Request.query.filter_by(customer_id=C_id).count()
+    closed = Request.query.filter_by(status="completed", customer_id=C_id).count()
+    ongoing = Request.query.filter_by(status="Accepted", customer_id=C_id).count()
+
+    service_img = os.path.join(IMAGE_DIR, f"C_request_{C_id}.jpg")
+    plt.bar(["Requested", "Closed", "Ongoing"], [request_count, closed, ongoing], color="blue", width=0.3)
+    plt.xlabel("Service Status")
+    plt.ylabel("Number of Services")
+    plt.title("Customer Service Requests")
+    plt.savefig(service_img, dpi=100)
+    plt.clf()
+
+    return jsonify({"service_img": service_img})
 
 
+@app.route("/api/P_summary")
+@auth_required('token')
+@roles_required('professional')
+def professional_summary():
+    P_id = current_user.id
+    request_count = Request.query.filter_by(professional_id=P_id).count()
+    closed = Request.query.filter_by(status="completed", professional_id=P_id).count()
+    ongoing = Request.query.filter_by(status="Accepted", professional_id=P_id).count()
+    print(closed,ongoing)
+    service_img = os.path.join(IMAGE_DIR, f"P_request_{P_id}.jpg")
+    plt.bar(["Requested", "Closed", "Ongoing"], [request_count, closed, ongoing], color="blue", width=0.3)
+    plt.xlabel("Service Status")
+    plt.ylabel("Number of Services")
+    plt.title("Professional Service Requests")
+    plt.savefig(service_img, dpi=100)
+    plt.clf()
+
+    return jsonify({"service_img": service_img})
 
 
 
